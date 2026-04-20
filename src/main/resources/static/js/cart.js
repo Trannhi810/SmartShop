@@ -1,4 +1,7 @@
 // Cart page functionality
+let currentCartItems = [];
+let selectedItemIds = new Set();
+
 document.addEventListener('DOMContentLoaded', async () => {
     const authenticated = await checkAuthStatus();
     if (!authenticated) {
@@ -13,6 +16,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadCart() {
     try {
         const cart = await api.getCart();
+        currentCartItems = cart.items || [];
+        
+        // Default: select all if none selected yet
+        if (selectedItemIds.size === 0 && currentCartItems.length > 0) {
+            currentCartItems.forEach(item => selectedItemIds.add(item.productId));
+        }
+        
         displayCart(cart);
     } catch (error) {
         console.error('Error loading cart:', error);
@@ -21,10 +31,35 @@ async function loadCart() {
     }
 }
 
+function toggleSelectAll(checked) {
+    if (checked) {
+        currentCartItems.forEach(item => selectedItemIds.add(item.productId));
+    } else {
+        selectedItemIds.clear();
+    }
+    updateCartUI();
+}
+
+function toggleSelectItem(productId, checked) {
+    if (checked) {
+        selectedItemIds.add(productId);
+    } else {
+        selectedItemIds.delete(productId);
+    }
+    updateCartUI();
+}
+
+function updateCartUI() {
+    // We re-render to ensure everything is in sync, but for performance 
+    // we could just update the summary. Given the scale, re-rendering is safe.
+    displayCart({ items: currentCartItems });
+}
+
 function displayCart(cart) {
     const container = document.getElementById('cartContent');
+    const items = cart.items || currentCartItems;
     
-    if (!cart || !cart.items || cart.items.length === 0) {
+    if (!items || items.length === 0) {
         if (window.setCartBadgeCount) {
             window.setCartBadgeCount(0);
         }
@@ -44,20 +79,29 @@ function displayCart(cart) {
         return;
     }
     
-    const totalAmount = cart.totalAmount || 0;
-    const subtotal = cart.subtotal || totalAmount;
-    const shipping = cart.shippingFee || 0;
-    const discount = cart.discountAmount || 0;
+    // Calculate totals based on selected items
+    let selectedSubtotal = 0;
+    const selectedItemsCount = items.filter(item => selectedItemIds.has(item.productId)).length;
+    const allSelected = selectedItemsCount === items.length && items.length > 0;
     
     let itemsHtml = '';
-    cart.items.forEach(item => {
+    items.forEach(item => {
+        const isSelected = selectedItemIds.has(item.productId);
         const price = item.price || 0;
         const quantity = item.quantity || 1;
         const lineTotal = item.lineTotal || (price * quantity);
         const productName = escapeHtml(item.productName || 'Sản phẩm');
         
+        if (isSelected) {
+            selectedSubtotal += lineTotal;
+        }
+        
         itemsHtml += `
             <div class="cart-item">
+                <label class="custom-checkbox">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelectItem(${item.productId}, this.checked)">
+                    <span class="checkmark"></span>
+                </label>
                 <img src="${item.imageUrl || 'https://images.unsplash.com/photo-1512447608772-994891cd05d0?auto=format&fit=crop&w=640&q=80'}" 
                      class="cart-item-image" 
                      alt="${productName}">
@@ -87,44 +131,61 @@ function displayCart(cart) {
         `;
     });
     
+    const shipping = 0; // Assume 0 in cart, will be calculated in checkout
+    const discount = 0; // Vouchers are handled in checkout mostly
+    const totalAmount = selectedSubtotal + shipping - discount;
+    
     container.innerHTML = `
         <div style="display: grid; grid-template-columns: 1fr 400px; gap: 32px;">
             <div>
+                <div class="select-all-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" ${allSelected ? 'checked' : ''} onchange="toggleSelectAll(this.checked)">
+                        <span class="checkmark"></span>
+                    </label>
+                    <span>Chọn tất cả (${items.length} sản phẩm)</span>
+                </div>
                 ${itemsHtml}
             </div>
             <div class="cart-summary">
                 <h3 style="margin: 0 0 24px; font-size: 1.3rem;">Tóm tắt đơn hàng</h3>
                 <div class="summary-row">
+                    <span class="summary-label">Đã chọn</span>
+                    <span class="summary-value">${selectedItemsCount} sản phẩm</span>
+                </div>
+                <div class="summary-row">
                     <span class="summary-label">Tạm tính</span>
-                    <span class="summary-value">${formatPrice(subtotal)}</span>
+                    <span class="summary-value">${formatPrice(selectedSubtotal)}</span>
                 </div>
-                ${shipping > 0 ? `
-                <div class="summary-row">
-                    <span class="summary-label">Phí vận chuyển</span>
-                    <span class="summary-value">${formatPrice(shipping)}</span>
-                </div>
-                ` : ''}
-                ${discount > 0 ? `
-                <div class="summary-row">
-                    <span class="summary-label">Giảm giá</span>
-                    <span class="summary-value" style="color: #16a34a;">-${formatPrice(discount)}</span>
-                </div>
-                ` : ''}
                 <div class="summary-row">
                     <span class="summary-label">Tổng cộng</span>
                     <span class="summary-value summary-total">${formatPrice(totalAmount)}</span>
                 </div>
                 <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
-                    <a href="/checkout.html" class="button" style="text-align: center; width: 100%;">Thanh toán</a>
+                    <button onclick="goToCheckout()" class="button" ${selectedItemsCount === 0 ? 'disabled' : ''} style="text-align: center; width: 100%;">
+                        Mua hàng (${selectedItemsCount})
+                    </button>
                     <a href="/product.html" class="button button--ghost" style="text-align: center; width: 100%;">Tiếp tục mua sắm</a>
                 </div>
             </div>
         </div>
     `;
-    const quantity = cart.totalQuantity ?? cart.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    
+    const quantity = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
     if (window.setCartBadgeCount) {
         window.setCartBadgeCount(quantity);
     }
+}
+
+function goToCheckout() {
+    if (selectedItemIds.size === 0) {
+        alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
+        return;
+    }
+    
+    // Save selected items to sessionStorage for checkout page
+    sessionStorage.setItem('selectedItemIds', JSON.stringify(Array.from(selectedItemIds)));
+    window.location.href = '/checkout.html';
 }
 
 function escapeHtml(text) {
@@ -143,10 +204,9 @@ async function updateQuantity(productId, quantity) {
     try {
         await api.updateCartItem(productId, parseInt(quantity));
         await loadCart();
-        // Thông báo đã tắt theo yêu cầu
     } catch (error) {
         console.error('Error updating quantity:', error);
-        await loadCart(); // Reload to reset
+        await loadCart();
     }
 }
 
@@ -157,11 +217,12 @@ async function removeItem(productId) {
     
     try {
         await api.removeCartItem(productId);
+        selectedItemIds.delete(productId); // Remove from selection if deleted
         await loadCart();
-        // Thông báo đã tắt theo yêu cầu
     } catch (error) {
         console.error('Error removing item:', error);
     }
 }
+
 
 

@@ -204,6 +204,12 @@ public class CartService {
         User user = getCurrentUser();
         ShoppingCart cart = getOrCreateCart(user);
         List<CartItem> items = cartItemRepository.findByCartAndIsWishlist(cart, false);
+        return applyVoucherForItems(code, items);
+    }
+
+    // ✅ Áp dụng voucher cho danh sách sản phẩm cụ thể
+    public ApplyVoucherResponse applyVoucherForItems(String code, List<CartItem> items) {
+        User user = getCurrentUser();
         CartResponse cartResponse = buildCartResponse(items);
 
         double originalTotal = cartResponse.getTotalAmount() != null ? cartResponse.getTotalAmount() : 0.0;

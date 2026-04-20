@@ -1,6 +1,11 @@
 // Admin Products Management
 let products = [];
 let categories = [];
+let currentPage = 0;
+let totalPages = 0;
+let totalElements = 0;
+const pageSize = 10;
+
 let currentFilters = {
     categoryId: '',
     sort: 'id',
@@ -89,7 +94,7 @@ window.exportToPDF = async function() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Get blob and create download link
+   
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -120,8 +125,8 @@ async function loadProducts() {
     try {
         // Build query parameters
         const params = {
-            page: 0, 
-            size: 10000,
+            page: currentPage, 
+            size: pageSize,
             includeInactive: true,
             sort: currentFilters.sort,
             direction: currentFilters.direction
@@ -133,22 +138,25 @@ async function loadProducts() {
         }
         
         const response = await api.getProducts(params);
+        console.log('Admin Products API response:', response);
         
         // Handle Page object response (from paginated API)
-        // Page object has structure: { content: [...], totalElements: ..., totalPages: ..., ... }
         if (response && response.content && Array.isArray(response.content)) {
             products = response.content;
+            totalPages = response.totalPages || 0;
+            totalElements = response.totalElements || 0;
         } else if (Array.isArray(response)) {
-            // Fallback: if response is already an array
             products = response;
-        } else if (response && response.data && Array.isArray(response.data)) {
-            // Handle ApiResponse wrapper if needed
-            products = response.data;
+            totalPages = 1;
+            totalElements = response.length;
         } else {
             products = [];
+            totalPages = 0;
+            totalElements = 0;
         }
         
         renderProductsTable();
+        renderPagination();
     } catch (error) {
         console.error('Error loading products:', error);
         showAlert('Lỗi khi tải danh sách sản phẩm: ' + (error.message || 'Unknown error'), 'error');
@@ -202,6 +210,7 @@ function applyFilters() {
     currentFilters.sort = sortBy ? sortBy.value : 'id';
     currentFilters.direction = sortDirection ? sortDirection.value : 'asc';
     
+    currentPage = 0; // Reset to first page
     loadProducts();
 }
 
@@ -221,6 +230,7 @@ function resetFilters() {
     if (sortBy) sortBy.value = 'id';
     if (sortDirection) sortDirection.value = 'asc';
     
+    currentPage = 0; // Reset to first page
     loadProducts();
 }
 
@@ -509,5 +519,59 @@ function showAlert(message, type = 'success') {
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);
+}
+
+// Render pagination
+function renderPagination() {
+    const paginationEl = document.getElementById('adminPagination');
+    const showingCountEl = document.getElementById('showingCount');
+    const totalCountEl = document.getElementById('totalCount');
+    
+    if (showingCountEl) showingCountEl.textContent = products.length;
+    if (totalCountEl) totalCountEl.textContent = totalElements;
+    
+    if (!paginationEl) return;
+    
+    if (totalPages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    // Prev button
+    const prevDisabled = currentPage === 0 ? 'disabled' : '';
+    html += `
+        <li class="page-item ${prevDisabled}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Trước</a>
+        </li>
+    `;
+    
+    // Page numbers
+    for (let i = 0; i < totalPages; i++) {
+        const active = currentPage === i ? 'active' : '';
+        html += `
+            <li class="page-item ${active}">
+                <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i + 1}</a>
+            </li>
+        `;
+    }
+    
+    // Next button
+    const nextDisabled = currentPage >= totalPages - 1 ? 'disabled' : '';
+    html += `
+        <li class="page-item ${nextDisabled}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Sau</a>
+        </li>
+    `;
+    
+    paginationEl.innerHTML = html;
+}
+
+function changePage(page) {
+    if (page < 0 || page >= totalPages) return;
+    currentPage = page;
+    loadProducts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

@@ -66,16 +66,20 @@ public class CheckoutService {
         ShoppingCart cart = getCart(user);
         List<CartItem> items = cartItemRepository.findByCartAndIsWishlist(cart, false);
 
-        if (items.isEmpty()) {
-            throw new RuntimeException("Giỏ hàng không có sản phẩm");
+        // Lọc các sản phẩm được chọn nếu có truyền vào itemIds
+        if (req.getItemIds() != null && !req.getItemIds().isEmpty()) {
+            items = items.stream()
+                    .filter(ci -> req.getItemIds().contains(ci.getProduct().getId()))
+                    .collect(Collectors.toList());
         }
 
-        // Tính tổng tiền sản phẩm hiện tại
-        CartResponse cartResponse = cartService.getCart();
-        double originalTotal = cartResponse.getTotalAmount() != null ? cartResponse.getTotalAmount() : 0.0;
+        if (items.isEmpty()) {
+            throw new RuntimeException("Giỏ hàng không có sản phẩm được chọn để thanh toán");
+        }
 
-        // 2️⃣1️⃣ Tính lại tổng tiền với voucher
-        ApplyVoucherResponse voucherResult = cartService.applyVoucher(req.getVoucherCode());
+        // 2️⃣1️⃣ Tính lại tổng tiền với voucher cho các sản phẩm ĐÃ CHỌN
+        ApplyVoucherResponse voucherResult = cartService.applyVoucherForItems(req.getVoucherCode(), items);
+        double originalTotal = voucherResult.getOriginalTotal();
         double finalTotal = voucherResult.getFinalTotal();
 
         // Tính phí vận chuyển
@@ -157,7 +161,7 @@ public class CheckoutService {
                     ));
         }
 
-        // Sau khi tạo đơn thành công: có thể xóa giỏ
+        // Sau khi tạo đơn thành công: CHỈ XÓA CÁC SẢN PHẨM ĐÃ CHỌN TRONG GIỎ
         cartItemRepository.deleteAll(items);
 
         return CheckoutResponse.builder()

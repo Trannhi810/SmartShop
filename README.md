@@ -526,13 +526,8 @@ Sau khi chạy `database.sql`, có sẵn các tài khoản:
 ### Admin
 - **Username**: `admin`
 - **Email**: `admin123@gmail.com`
-- **Password**: `123456`
+- **Password**: `admin123@gmail.com`
 - **Role**: ROLE_ADMIN
-
-### Customer
-- **Username**: `User123@gmail.com`
-- **Password**: `User123@gmail.com` (hoặc mật khẩu đã hash trong DB)
-- **Role**: ROLE_CUSTOMER
 
 > **Lưu ý**: Mật khẩu trong database đã được hash bằng BCrypt. Nếu không đăng nhập được, hãy tạo user mới qua API register.
 

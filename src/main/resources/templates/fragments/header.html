@@ -1,23 +1,20 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Xem chi tiết đơn hàng và trạng thái giao hàng trên SmartShop">
-    <meta name="keywords" content="chi tiết đơn hàng, giao hàng, SmartShop">
-    <meta name="author" content="SmartShop">
-    <title>Chi tiết đơn hàng - SmartShop</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="/css/home.css">
-    <link rel="stylesheet" href="/css/order-detail.css">
-</head>
-<body>
-<header class="header">
+<header th:fragment="header" class="header" xmlns:th="http://www.thymeleaf.org">
     <div class="container header__content">
         <div class="logo"><a href="/">SmartShop</a></div>
         <nav class="nav">
             <a href="/" class="nav__link">Trang chủ</a>
             <a href="/product.html" class="nav__link">Sản phẩm</a>
+            <div class="nav__dropdown" id="categoryDropdown">
+                <button class="nav__link nav__link--dropdown" id="categoryDropdownBtn" aria-expanded="false" aria-haspopup="true">
+                    Danh Mục
+                    <svg class="nav__dropdown-arrow" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="nav__dropdown-menu" id="categoryDropdownMenu">
+                    <div class="nav__dropdown-loading">Đang tải...</div>
+                </div>
+            </div>
         </nav>
         <div class="header__search">
             <form class="search-form" id="searchForm" onsubmit="handleSearch(event)">
@@ -66,9 +63,9 @@
                 </svg>
                 <span class="visually-hidden">Giỏ hàng</span>
             </a>
-            <div class="header__account" id="headerAccountAnonymous">
-                <a href="/auth/login.html" class="button button--ghost">Đăng nhập</a>
-                <a href="/auth/register.html" class="button">Đăng ký</a>
+            <div class="header__account" id="headerAccountAnonymous" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: nowrap;">
+                <a href="/auth/login.html" class="button button--ghost" style="white-space: nowrap;">Đăng nhập</a>
+                <a href="/auth/register.html" class="button" style="white-space: nowrap;">Đăng ký</a>
             </div>
             <div class="header__account header__account--auth d-none" id="headerAccountAuth">
                 <div class="header__user-wrapper">
@@ -128,99 +125,3 @@
         </div>
     </div>
 </header>
-
-<main>
-    <section class="section">
-        <div class="container order-detail-container">
-            <div class="order-detail-header">
-                <div>
-                    <a href="/orders.html" class="back-link">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"/>
-                        </svg>
-                        Quay lại đơn hàng
-                    </a>
-                    <h1 style="margin-top: 12px;">Chi tiết đơn hàng</h1>
-                </div>
-            </div>
-            
-            <div id="orderDetail">
-                <div class="text-center">
-                    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: var(--color-primary);">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="alertContainer" style="margin-bottom: 24px;"></div>
-        </div>
-    </section>
-</main>
-
-<footer class="footer">
-    <div class="container footer__content">
-        <div class="footer__column footer__column--brand">
-            <div class="footer__brand">SmartShop</div>
-            <div class="footer__contact">
-                <svg viewBox="0 0 24 24" class="footer__icon" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-                <a href="mailto:support@smartshop.vn">support@smartshop.vn</a>
-            </div>
-        </div>
-        <div class="footer__column">
-            <h4 class="footer__title">THÔNG TIN LIÊN HỆ</h4>
-            <ul class="footer__list">
-                <li>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
-                        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                    <a href="mailto:support@smartshop.vn">support@smartshop.vn</a>
-                </li>
-                <li>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
-                        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
-                    </svg>
-                    <span>Hotline: 1900 1234</span>
-                </li>
-                <li>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                    <span>123 Đường ABC, Quận XYZ, TP.HCM</span>
-                </li>
-                <li>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Thứ 2 - Chủ nhật: 8:00 - 22:00</span>
-                </li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer__divider"></div>
-    <p class="footer__copyright">© 2025 SmartShop. All rights reserved.</p>
-</footer>
-
-<script src="/js/api.js"></script>
-<script src="/js/notifications.js" defer></script>
-<script src="/js/home.js" defer></script>
-<script src="/js/order-detail.js"></script>
-<script>
-    function handleSearch(event) {
-        event.preventDefault();
-        const searchInput = document.getElementById('searchInput');
-        const keyword = searchInput ? searchInput.value.trim() : '';
-        
-        if (keyword) {
-            window.location.href = `/product.html?q=${encodeURIComponent(keyword)}`;
-        } else {
-            window.location.href = '/product.html';
-        }
-    }
-    
-</script>
-</body>
-</html>

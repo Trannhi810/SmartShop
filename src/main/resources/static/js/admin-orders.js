@@ -133,6 +133,10 @@ async function loadOrders() {
         // Handle ApiResponse wrapper - response.data contains the list
         orders = response.data || response || [];
         console.log('Loaded orders:', orders);
+        
+        // Update stats overview
+        updateStats(orders);
+        
         renderOrdersTable(orders);
     } catch (error) {
         console.error('Error loading orders:', error);
@@ -142,6 +146,26 @@ async function loadOrders() {
             tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Lỗi khi tải dữ liệu</td></tr>';
         }
     }
+}
+
+// Update stats overview
+function updateStats(ordersToStats) {
+    const totalOrders = ordersToStats.length;
+    const totalRevenue = ordersToStats
+        .filter(o => o.status !== 'CANCELLED')
+        .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const pendingOrders = ordersToStats.filter(o => o.status === 'PENDING').length;
+    const shippingOrders = ordersToStats.filter(o => o.status === 'SHIPPING' || o.status === 'SHIPPED').length;
+
+    const totalOrdersEl = document.getElementById('totalOrdersStat');
+    const totalRevenueEl = document.getElementById('totalRevenueStat');
+    const pendingOrdersEl = document.getElementById('pendingOrdersStat');
+    const shippingOrdersEl = document.getElementById('shippingOrdersStat');
+
+    if (totalOrdersEl) totalOrdersEl.textContent = totalOrders;
+    if (totalRevenueEl) totalRevenueEl.textContent = formatPrice(totalRevenue);
+    if (pendingOrdersEl) pendingOrdersEl.textContent = pendingOrders;
+    if (shippingOrdersEl) shippingOrdersEl.textContent = shippingOrders;
 }
 
 // Filter orders
@@ -181,10 +205,15 @@ function filterOrders() {
 // Render orders table
 function renderOrdersTable(ordersToRender) {
     const tbody = document.getElementById('ordersTableBody');
+    const countLabel = document.getElementById('orderCountLabel');
     if (!tbody) return;
 
+    if (countLabel) {
+        countLabel.textContent = `Hiển thị ${ordersToRender.length} đơn hàng`;
+    }
+
     if (!ordersToRender || ordersToRender.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Không có đơn hàng nào</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted">Không có đơn hàng nào khớp với bộ lọc</td></tr>';
         return;
     }
 
@@ -202,24 +231,41 @@ function renderOrdersTable(ordersToRender) {
         
         return `
         <tr>
-            <td>${order.id}</td>
-            <td><strong>${order.orderNumber || '-'}</strong></td>
-            <td>${order.customerName || order.customerEmail || '-'}</td>
-            <td class="text-end">${formatPrice(totalAmount)}</td>
-            <td>${statusBadge}</td>
-            <td>${createdAt}</td>
+            <td class="ps-4 text-muted">#${order.id}</td>
+            <td><span class="fw-bold text-primary">${order.orderNumber || '-'}</span></td>
             <td>
-                <div class="btn-group" role="group">
-                    <button class="btn btn-sm btn-info me-1" onclick="viewOrderDetail(${order.id})" title="Xem chi tiết">
-                        <i class="bi bi-eye"></i> Xem
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm me-2 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-person text-secondary"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium">${order.customerName || 'Khách hàng lẻ'}</div>
+                        <div class="small text-muted">${order.customerEmail || ''}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="fw-bold">${formatPrice(totalAmount)}</td>
+            <td>${statusBadge}</td>
+            <td class="text-muted small">${createdAt}</td>
+            <td class="pe-4 text-end">
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="button button--ghost button--small" onclick="viewOrderDetail(${order.id})" title="Xem chi tiết">
+                        <i class="bi bi-eye"></i> Chi tiết
                     </button>
                     ${order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && order.status !== 'REFUNDED' ? `
-                        <select class="form-select form-select-sm" style="width: auto;" 
-                                onchange="updateOrderStatus(${order.id}, this.value)">
-                            <option value="">Cập nhật</option>
-                            ${getStatusOptions(order.status)}
-                        </select>
-                    ` : '<span class="badge bg-secondary">Hoàn tất</span>'}
+                        <div class="dropdown">
+                            <button class="button button--primary button--small dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Xử lý
+                            </button>
+                            <ul class="dropdown-menu shadow-sm border-0">
+                                ${getStatusOptions(order.id, order.status)}
+                            </ul>
+                        </div>
+                    ` : `
+                        <span class="admin-chip p-1 px-2 border-0" style="background: #f1f5f9; color: #64748b;">
+                            <i class="bi bi-check2-all me-1"></i> Đóng
+                        </span>
+                    `}
                 </div>
             </td>
         </tr>
@@ -230,30 +276,49 @@ function renderOrdersTable(ordersToRender) {
 // Get status badge
 function getStatusBadge(status) {
     const badges = {
-        'PENDING': '<span class="badge bg-warning">Chờ xác nhận</span>',
-        'CONFIRMED': '<span class="badge bg-info">Đã xác nhận</span>',
-        'PROCESSING': '<span class="badge bg-primary">Đang xử lý</span>',
-        'SHIPPING': '<span class="badge bg-info">Đang giao hàng</span>',
-        'SHIPPED': '<span class="badge bg-info">Đang giao hàng</span>',
-        'DELIVERED': '<span class="badge bg-success">Đã giao hàng</span>',
-        'COMPLETED': '<span class="badge bg-success">Hoàn thành</span>',
-        'CANCELLED': '<span class="badge bg-danger">Đã hủy</span>',
-        'REFUNDED': '<span class="badge bg-secondary">Đã hoàn tiền</span>'
+        'PENDING': '<span class="admin-chip" style="background: #fef3c7; color: #92400e;"><i class="bi bi-clock me-1"></i> Chờ xác nhận</span>',
+        'CONFIRMED': '<span class="admin-chip" style="background: #e0f2fe; color: #075985;"><i class="bi bi-check-circle me-1"></i> Đã xác nhận</span>',
+        'PROCESSING': '<span class="admin-chip" style="background: #e0e7ff; color: #3730a3;"><i class="bi bi-gear me-1"></i> Đang xử lý</span>',
+        'SHIPPING': '<span class="admin-chip" style="background: #fdf2f8; color: #9d174d;"><i class="bi bi-truck me-1"></i> Đang giao</span>',
+        'SHIPPED': '<span class="admin-chip" style="background: #fdf2f8; color: #9d174d;"><i class="bi bi-truck me-1"></i> Đang giao</span>',
+        'DELIVERED': '<span class="admin-chip" style="background: #dcfce7; color: #166534;"><i class="bi bi-box-seam me-1"></i> Đã giao hàng</span>',
+        'COMPLETED': '<span class="admin-chip" style="background: #ecfdf5; color: #065f46;"><i class="bi bi-patch-check me-1"></i> Hoàn thành</span>',
+        'CANCELLED': '<span class="admin-chip" style="background: #fee2e2; color: #991b1b;"><i class="bi bi-x-circle me-1"></i> Đã hủy</span>',
+        'REFUNDED': '<span class="admin-chip" style="background: #f3f4f6; color: #374151;"><i class="bi bi-arrow-counterclockwise me-1"></i> Đã hoàn tiền</span>'
     };
-    return badges[status] || '<span class="badge bg-secondary">' + status + '</span>';
+    return badges[status] || `<span class="admin-chip">${status}</span>`;
 }
 
-// Get status options for select
-function getStatusOptions(currentStatus) {
-    const statusMap = {
-        'PENDING': '<option value="PROCESSING">Đang xử lý</option><option value="CANCELLED">Hủy</option>',
-        'CONFIRMED': '<option value="PROCESSING">Đang xử lý</option><option value="CANCELLED">Hủy</option>',
-        'PROCESSING': '<option value="SHIPPING">Đang giao hàng</option><option value="CANCELLED">Hủy</option>',
-        'SHIPPING': '<option value="DELIVERED">Đã giao hàng</option>',
-        'SHIPPED': '<option value="DELIVERED">Đã giao hàng</option>',
-        'DELIVERED': '<option value="COMPLETED">Hoàn thành</option>'
+// Get status options for dropdown
+function getStatusOptions(orderId, currentStatus) {
+    const options = {
+        'PENDING': [
+            { val: 'PROCESSING', label: '⚙️ Bắt đầu xử lý' },
+            { val: 'CANCELLED', label: '❌ Hủy đơn hàng' }
+        ],
+        'CONFIRMED': [
+            { val: 'PROCESSING', label: '⚙️ Bắt đầu xử lý' },
+            { val: 'CANCELLED', label: '❌ Hủy đơn hàng' }
+        ],
+        'PROCESSING': [
+            { val: 'SHIPPING', label: '🚚 Giao hàng' },
+            { val: 'CANCELLED', label: '❌ Hủy đơn hàng' }
+        ],
+        'SHIPPING': [
+            { val: 'DELIVERED', label: '✅ Đã giao hàng' }
+        ],
+        'SHIPPED': [
+            { val: 'DELIVERED', label: '✅ Đã giao hàng' }
+        ],
+        'DELIVERED': [
+            { val: 'COMPLETED', label: '🏁 Hoàn thành' }
+        ]
     };
-    return statusMap[currentStatus] || '';
+    
+    const currentOptions = options[currentStatus] || [];
+    return currentOptions.map(opt => `
+        <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="updateOrderStatus(${orderId}, '${opt.val}')">${opt.label}</a></li>
+    `).join('');
 }
 
 // View order detail
@@ -275,92 +340,108 @@ async function viewOrderDetail(orderId) {
         const customerPhone = order.customerPhone || 'N/A';
         
         modalBody.innerHTML = `
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <h5>Đơn hàng: <strong>${order.orderNumber || '-'}</strong></h5>
+                    <div class="p-3 rounded-3 bg-light h-100">
+                        <h6 class="text-uppercase fw-bold text-muted small mb-3">Thông tin đơn hàng</h6>
+                        <div class="mb-2"><strong>Mã đơn:</strong> <span class="text-primary fw-bold">${order.orderNumber || '-'}</span></div>
+                        <div class="mb-2"><strong>Ngày đặt:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '-'}</div>
+                        <div class="mb-0"><strong>Trạng thái:</strong> ${getStatusBadge(order.status || 'PENDING')}</div>
+                    </div>
                 </div>
-                <div class="col-md-6 text-end">
-                    ${getStatusBadge(order.status || 'PENDING')}
+                <div class="col-md-6">
+                    <div class="p-3 rounded-3 bg-light h-100">
+                        <h6 class="text-uppercase fw-bold text-muted small mb-3">Thông tin khách hàng</h6>
+                        <div class="mb-2"><strong>Họ tên:</strong> ${customerName}</div>
+                        <div class="mb-2"><strong>SĐT:</strong> ${customerPhone}</div>
+                        <div class="mb-0"><strong>Email:</strong> ${customerEmail}</div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="p-3 rounded-3 border">
+                        <h6 class="text-uppercase fw-bold text-muted small mb-2">Địa chỉ giao hàng</h6>
+                        <div class="text-dark">${order.shippingAddress || '-'}</div>
+                    </div>
                 </div>
             </div>
-            <hr>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <p><strong>Khách hàng:</strong> ${customerName}</p>
-                    <p><strong>Email:</strong> ${customerEmail}</p>
-                    <p><strong>Số điện thoại:</strong> ${customerPhone}</p>
-                    <p><strong>Địa chỉ:</strong> ${order.shippingAddress || '-'}</p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Phương thức thanh toán:</strong> ${order.paymentMethod || '-'}</p>
-                    <p><strong>Trạng thái thanh toán:</strong> ${order.paymentStatus || '-'}</p>
-                    <p><strong>Ngày đặt:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '-'}</p>
-                </div>
-            </div>
+
             ${order.voucherCode ? `
-                <div class="alert alert-info">
-                    <strong>Voucher:</strong> ${order.voucherCode} 
-                    ${order.voucherDiscount ? `- Giảm ${formatPrice(order.voucherDiscount)}` : ''}
+                <div class="mt-4 p-3 rounded-3 border-start border-4 border-info bg-info bg-opacity-10">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-ticket-perforated fs-4 me-3 text-info"></i>
+                        <div>
+                            <div class="fw-bold text-info">Voucher áp dụng: ${order.voucherCode}</div>
+                            <div class="small">Đã giảm ${formatPrice(order.voucherDiscount || 0)} vào tổng đơn hàng</div>
+                        </div>
+                    </div>
                 </div>
             ` : ''}
-            <hr>
-            <h6>Sản phẩm:</h6>
+
+            <h6 class="mt-4 fw-bold mb-3 d-flex align-items-center">
+                <i class="bi bi-box me-2"></i> Danh sách sản phẩm
+            </h6>
             <div class="table-responsive">
-                <table class="table table-sm table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Sản phẩm</th>
-                            <th class="text-center">Số lượng</th>
-                            <th class="text-end">Giá</th>
-                            <th class="text-end">Thành tiền</th>
+                <table class="table table-hover align-middle border-top">
+                    <thead class="bg-light">
+                        <tr class="small text-uppercase text-muted">
+                            <th class="py-3">Sản phẩm</th>
+                            <th class="text-center py-3">SL</th>
+                            <th class="text-end py-3">Đơn giá</th>
+                            <th class="text-end py-3">Thành tiền</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${order.items && order.items.length > 0 ? order.items.map(item => `
                             <tr>
-                                <td>${item.productName || 'N/A'}</td>
+                                <td class="py-3">
+                                    <div class="fw-medium">${item.productName || 'N/A'}</div>
+                                    ${item.variantName ? `<div class="small text-muted">${item.variantName}</div>` : ''}
+                                </td>
                                 <td class="text-center">${item.quantity || 0}</td>
-                                <td class="text-end">${formatPrice(item.price || 0)}</td>
-                                <td class="text-end">${formatPrice(item.lineTotal || (item.price || 0) * (item.quantity || 0))}</td>
+                                <td class="text-end text-muted">${formatPrice(item.price || 0)}</td>
+                                <td class="text-end fw-bold">${formatPrice(item.lineTotal || (item.price || 0) * (item.quantity || 0))}</td>
                             </tr>
-                        `).join('') : '<tr><td colspan="4" class="text-center">Không có sản phẩm</td></tr>'}
+                        `).join('') : '<tr><td colspan="4" class="text-center py-4">Không có sản phẩm</td></tr>'}
                     </tbody>
-                    <tfoot>
+                    <tfoot class="bg-light bg-opacity-50">
                         <tr>
-                            <td colspan="3" class="text-end"><strong>Tạm tính:</strong></td>
-                            <td class="text-end">${formatPrice((order.items || []).reduce((sum, item) => sum + (item.lineTotal || (item.price || 0) * (item.quantity || 0)), 0))}</td>
+                            <td colspan="3" class="text-end py-2 text-muted">Tạm tính:</td>
+                            <td class="text-end py-2">${formatPrice((order.items || []).reduce((sum, item) => sum + (item.lineTotal || (item.price || 0) * (item.quantity || 0)), 0))}</td>
                         </tr>
                         ${order.voucherDiscount && order.voucherDiscount > 0 ? `
                             <tr>
-                                <td colspan="3" class="text-end"><strong>Giảm giá:</strong></td>
-                                <td class="text-end text-danger">-${formatPrice(order.voucherDiscount || 0)}</td>
+                                <td colspan="3" class="text-end py-2 text-muted">Giảm giá:</td>
+                                <td class="text-end py-2 text-danger">-${formatPrice(order.voucherDiscount || 0)}</td>
                             </tr>
                         ` : ''}
                         <tr>
-                            <td colspan="3" class="text-end"><strong>Phí vận chuyển:</strong></td>
-                            <td class="text-end">${formatPrice(order.shippingFee || 0)}</td>
+                            <td colspan="3" class="text-end py-2 text-muted">Phí vận chuyển:</td>
+                            <td class="text-end py-2">${formatPrice(order.shippingFee || 0)}</td>
                         </tr>
-                        <tr class="table-primary">
-                            <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
-                            <td class="text-end"><strong>${formatPrice(
+                        <tr class="fs-5">
+                            <td colspan="3" class="text-end py-3 fw-bold">Tổng cộng:</td>
+                            <td class="text-end py-3 fw-bold text-primary">${formatPrice(
                                 (order.items || []).reduce((sum, item) => sum + (item.lineTotal || (item.price || 0) * (item.quantity || 0)), 0) 
                                 - (order.voucherDiscount || 0) 
                                 + (order.shippingFee || 0)
-                            )}</strong></td>
+                            )}</td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
+
             ${order.statusHistory && order.statusHistory.length > 0 ? `
-                <hr>
-                <h6>Lịch sử trạng thái:</h6>
-                <div class="list-group">
-                    ${order.statusHistory.map(history => `
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between">
-                                <span>${history.oldStatus || '-'} → ${history.newStatus || '-'}</span>
-                                <small class="text-muted">${history.createdAt ? new Date(history.createdAt).toLocaleString('vi-VN') : '-'}</small>
+                <h6 class="mt-4 fw-bold mb-3 d-flex align-items-center">
+                    <i class="bi bi-clock-history me-2"></i> Lịch sử đơn hàng
+                </h6>
+                <div class="ms-2 ps-4 border-start position-relative">
+                    ${order.statusHistory.map((history, idx) => `
+                        <div class="mb-3 position-relative">
+                            <div class="position-absolute start-0 top-0 translate-middle-x bg-white p-1" style="margin-left: -25px;">
+                                <div class="rounded-circle bg-primary" style="width: 10px; height: 10px;"></div>
                             </div>
+                            <div class="small fw-bold text-primary">${history.newStatus || '-'}</div>
+                            <div class="text-muted small">${history.createdAt ? new Date(history.createdAt).toLocaleString('vi-VN') : '-'}</div>
                         </div>
                     `).join('')}
                 </div>

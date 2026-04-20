@@ -1,11 +1,18 @@
 // Checkout page functionality
 let appliedVoucherCheckout = null; // Store applied voucher info
+let selectedItemIdsCheckout = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const authenticated = await checkAuthStatus();
     if (!authenticated) {
         window.location.href = '/auth/login.html?redirect=/checkout.html';
         return;
+    }
+    
+    // Get selected items from session storage
+    const savedIds = sessionStorage.getItem('selectedItemIds');
+    if (savedIds) {
+        selectedItemIdsCheckout = new Set(JSON.parse(savedIds));
     }
     
     // Check if voucher was applied in cart
@@ -45,23 +52,43 @@ async function loadCartSummary() {
             return;
         }
         
-        const shippingFee = getShippingFee();
-        const originalTotal = cart.totalAmount || 0;
-        
-        // Calculate with voucher if applied
-        let subtotal = originalTotal;
-        let discount = 0;
-        let finalTotal = originalTotal;
-        
-        if (appliedVoucherCheckout) {
-            subtotal = appliedVoucherCheckout.originalTotal || originalTotal;
-            discount = appliedVoucherCheckout.discount || 0;
-            finalTotal = appliedVoucherCheckout.finalTotal || originalTotal;
+        // Filter items if some were selected
+        let cartItems = cart.items;
+        if (selectedItemIdsCheckout) {
+            cartItems = cart.items.filter(item => selectedItemIdsCheckout.has(item.productId));
+        }
+
+        if (cartItems.length === 0) {
+            document.getElementById('orderSummary').innerHTML = 
+                '<div class="alert alert-warning">Không có sản phẩm nào được chọn</div>';
+            const submitBtn = document.getElementById('checkoutForm')?.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+            return;
         }
         
-        const total = finalTotal + shippingFee;
+        const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const shippingFee = getShippingFee();
+        
+        // Calculate with voucher if applied
+        let discount = 0;
+        if (appliedVoucherCheckout) {
+            // Re-calculate discount based on selected items if needed
+            // For now, assume simple discount logic or use what API returned if applicable
+            discount = appliedVoucherCheckout.discount || 0;
+        }
+        
+        const total = subtotal - discount + shippingFee;
         
         document.getElementById('orderSummary').innerHTML = `
+            <div class="summary-items-list mb-3">
+                ${cartItems.map(item => `
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>${item.productName} x ${item.quantity}</span>
+                        <span>${formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                `).join('')}
+            </div>
+            <hr>
             <div class="d-flex justify-content-between mb-2">
                 <span>Tạm tính:</span>
                 <span>${formatPrice(subtotal)}</span>
@@ -79,13 +106,13 @@ async function loadCartSummary() {
             <hr>
             <div class="d-flex justify-content-between">
                 <strong>Tổng cộng:</strong>
-                <strong class="text-primary">${formatPrice(total)}</strong>
+                <strong class="text-primary" style="font-size: 1.4rem;">${formatPrice(total)}</strong>
             </div>
         `;
     } catch (error) {
         console.error('Error loading cart:', error);
         document.getElementById('orderSummary').innerHTML = 
-            '<div class="alert alert-danger">Không thể tải thông tin giỏ hàng</div>';
+            '<div class="alert alert-danger">Không thể tải thông tin đơn hàng</div>';
     }
 }
 
@@ -117,7 +144,9 @@ async function handleCheckout(e) {
         address,
         paymentMethod,
         shippingMethod,
-        voucherCode: appliedVoucherCheckout ? appliedVoucherCheckout.code : null
+        voucherCode: appliedVoucherCheckout ? appliedVoucherCheckout.code : null,
+        // Send selected items to server
+        itemIds: selectedItemIdsCheckout ? Array.from(selectedItemIdsCheckout) : []
     };
     
     try {
@@ -128,6 +157,10 @@ async function handleCheckout(e) {
         }
         
         const response = await api.checkout(checkoutData);
+        
+        // Clear session storage after successful checkout
+        sessionStorage.removeItem('selectedItemIds');
+        sessionStorage.removeItem('appliedVoucherCode');
         
         // Nếu thanh toán online (VNPAY), tạo payment URL và redirect
         if (paymentMethod === 'VNPAY') {

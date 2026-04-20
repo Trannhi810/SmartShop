@@ -122,6 +122,11 @@ function initCarousel() {
 }
 
 async function updateAuthUI() {
+    // Export for external calls
+    window.updateAuthUI = updateAuthUI;
+    
+    // Auth status logic...
+
     try {
         console.log('Updating auth UI...');
         const authenticated = await checkAuthStatus();
@@ -160,7 +165,7 @@ async function updateAuthUI() {
                     
                     // Set user name
                     if (userName) {
-                        const displayName = user.fullName || user.email || user.username || 'Người dùng';
+                        const displayName = user.fullName || user.username || user.email || 'Người dùng';
                         userName.textContent = displayName;
                         console.log('Set user name to:', displayName);
                         

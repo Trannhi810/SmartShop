@@ -17,6 +17,9 @@ public class CheckoutRequest {
 
     // Mã voucher (có thể null)
     private String voucherCode;
+
+    // Các mã sản phẩm được chọn (nếu để trống thì thanh toán toàn bộ giỏ)
+    private java.util.List<Long> itemIds;
 }
 
 

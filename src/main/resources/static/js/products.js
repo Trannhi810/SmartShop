@@ -1,13 +1,19 @@
 // Products page functionality
 let currentPage = 0;
-const pageSize = 1000; // Load all products
+const pageSize = 12; // Số lượng sản phẩm trên mỗi trang
 
 document.addEventListener('DOMContentLoaded', async () => {
     await updateAuthUI();
     
-    // Get search keyword from URL
+    // Get search keyword & page from URL
     const urlParams = new URLSearchParams(window.location.search);
     const searchKeyword = urlParams.get('q') || '';
+    const pageParam = urlParams.get('page');
+    
+    if (pageParam && !isNaN(pageParam)) {
+        // Giao diện (URL) dùng index bắt đầu từ 1, API nội bộ dùng index bắt đầu từ 0
+        currentPage = Math.max(0, parseInt(pageParam) - 1);
+    }
     
     // Set search input value if keyword exists
     const searchInput = document.getElementById('searchInput');
@@ -44,36 +50,35 @@ async function loadProducts() {
     }
 
     try {
-        console.log('Loading products with params:', params);
+        console.log('Loading products với params:', params);
         const response = await api.getProducts(params);
         console.log('Products API response:', response);
         
-        // Handle paginated response - get all products
+        // Handle paginated response
         let products = [];
-        if (response && response.content && Array.isArray(response.content)) {
-            // Spring Data Page format
-            products = response.content;
-            console.log('Using response.content, found', products.length, 'products');
-        } else if (response && Array.isArray(response)) {
-            // Direct array response
-            products = response;
-            console.log('Using direct array, found', products.length, 'products');
-        } else if (response && response.data && Array.isArray(response.data)) {
-            // Wrapped in data property
-            products = response.data;
-            console.log('Using response.data, found', products.length, 'products');
-        } else {
-            console.warn('Unexpected response format:', response);
-        }
+        let totalPages = 0;
         
-        console.log('Total products to display:', products.length);
+        console.log('API Response data:', response);
+
+        if (response && response.content) {
+            // Standard Spring Data Page
+            products = response.content;
+            totalPages = response.totalPages;
+        } else if (response && response.data) {
+            // Some APIs wrap content in data
+            products = Array.isArray(response.data) ? response.data : (response.data.content || []);
+            totalPages = response.totalPages || response.total_pages || response.data.totalPages || 1;
+        } else if (Array.isArray(response)) {
+            // Fallback for direct array (calculate mock pages if possible, or default to 1)
+            products = response;
+            totalPages = 1;
+        }
+
+        console.log('Extracted totalPages:', totalPages);
         displayProducts(products);
         
-        // Hide pagination since we're showing all products
-        const paginationEl = document.getElementById('pagination');
-        if (paginationEl) {
-            paginationEl.innerHTML = '';
-        }
+        // Render pagination - ensure we at least show 1 page
+        renderPagination(totalPages || 1, currentPage);
     } catch (error) {
         console.error('Error loading products:', error);
         const container = document.getElementById('productsGrid');
@@ -192,3 +197,67 @@ async function addToCart(productId, variantId, quantity) {
     }
 }
 
+function renderPagination(totalPages, current) {
+    const paginationEl = document.getElementById('pagination');
+    if (!paginationEl) return;
+    
+    // Đảm bảo luôn hiển thị phân trang (ít nhất 1 trang)
+    const displayTotalPages = Math.max(1, totalPages);
+    let html = '';
+    
+    // Prev button
+    const prevDisabled = current <= 0 ? 'disabled' : '';
+    html += `
+        <li class="pagination__item">
+            <a href="javascript:void(0)" class="pagination__link ${prevDisabled}" onclick="if(${current} > 0) changePage(${current - 1})" aria-label="Trang trước">
+                &laquo;
+            </a>
+        </li>
+    `;
+    
+    // Page numbers
+    for (let i = 0; i < displayTotalPages; i++) {
+        if (displayTotalPages > 7) {
+            // Rút gọn trang nếu quá nhiều (chỉ hiển thị quanh trang hiện tại)
+            if (i === 0 || i === displayTotalPages - 1 || (i >= current - 1 && i <= current + 1)) {
+                const active = current === i ? 'active' : '';
+                html += `
+                    <li class="pagination__item">
+                        <a href="javascript:void(0)" class="pagination__link ${active}" onclick="changePage(${i})">${i + 1}</a>
+                    </li>
+                `;
+            } else if (i === current - 2 || i === current + 2) {
+                 html += `
+                    <li class="pagination__item">
+                        <span class="pagination__link" style="border: none; background: transparent; padding: 10px 8px; cursor: default;">...</span>
+                    </li>
+                `;
+            }
+        } else {
+            const active = current === i ? 'active' : '';
+            html += `
+                <li class="pagination__item">
+                    <a href="javascript:void(0)" class="pagination__link ${active}" onclick="changePage(${i})">${i + 1}</a>
+                </li>
+            `;
+        }
+    }
+    
+    // Next button
+    const nextDisabled = current >= displayTotalPages - 1 ? 'disabled' : '';
+    html += `
+        <li class="pagination__item">
+            <a href="javascript:void(0)" class="pagination__link ${nextDisabled}" onclick="if(${current} < ${displayTotalPages - 1}) changePage(${current + 1})" aria-label="Trang tiếp">
+                &raquo;
+            </a>
+        </li>
+    `;
+    
+    paginationEl.innerHTML = html;
+}
+
+function changePage(page) {
+    const url = new URL(window.location);
+    url.searchParams.set('page', page + 1); // URL parameter starts from 1
+    window.location.href = url.toString();
+}

@@ -69,77 +69,139 @@
             </nav>
 
             <!-- Content -->
+            <!-- Content -->
             <div class="admin-content">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div></div>
-                    <div class="btn-group export-dropdown">
-                        <button type="button" class="btn btn-success dropdown-toggle" id="exportDropdownBtn" aria-expanded="false" onclick="toggleExportMenu(this, event)">
-                            <i class="bi bi-file-earmark-arrow-down"></i> Xuất báo cáo
-                        </button>
-                        <ul class="dropdown-menu export-dropdown-menu">
-                            <li><a class="dropdown-item" href="javascript:void(0)" id="exportExcelBtn"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a></li>
-                            <li><a class="dropdown-item" href="javascript:void(0)" id="exportPdfBtn"><i class="bi bi-file-earmark-pdf"></i> Xuất PDF</a></li>
-                        </ul>
+                <!-- Stats Overview -->
+                <div class="stats-grid animate-fade-in">
+                    <div class="stat-card">
+                        <div class="stat-card__row">
+                            <div class="stat-card__icon primary">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+                            <h2 class="stat-card__value" id="totalOrdersStat">0</h2>
+                        </div>
+                        <div class="stat-card__label">Tổng đơn hàng</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__row">
+                            <div class="stat-card__icon success">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                            <h2 class="stat-card__value" id="totalRevenueStat">0đ</h2>
+                        </div>
+                        <div class="stat-card__label">Doanh thu tạm tính</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__row">
+                            <div class="stat-card__icon warning">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <h2 class="stat-card__value" id="pendingOrdersStat">0</h2>
+                        </div>
+                        <div class="stat-card__label">Đang chờ xử lý</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__row">
+                            <div class="stat-card__icon info">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <h2 class="stat-card__value" id="shippingOrdersStat">0</h2>
+                        </div>
+                        <div class="stat-card__label">Đang giao hàng</div>
                     </div>
                 </div>
 
-                <div id="alertContainer"></div>
-
-                <!-- Filter -->
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label class="form-label">Tìm kiếm</label>
-                                <input type="text" class="form-control" id="searchInput" placeholder="Mã đơn hàng, tên khách hàng...">
+                <div class="admin-card mb-4 animate-slide-up">
+                    <div class="admin-card__header">
+                        <div>
+                            <h2 class="admin-card__title">Bộ lọc tìm kiếm</h2>
+                            <p class="admin-card__subtitle">Quản lý và tra cứu thông tin đơn hàng của bạn</p>
+                        </div>
+                        <div class="admin-card__actions">
+                            <div class="btn-group export-dropdown">
+                                <button type="button" class="button button--success dropdown-toggle" id="exportDropdownBtn" aria-expanded="false" onclick="toggleExportMenu(this, event)">
+                                    <i class="bi bi-file-earmark-arrow-down"></i> Xuất dữ liệu
+                                </button>
+                                <ul class="dropdown-menu export-dropdown-menu">
+                                    <li><a class="dropdown-item" href="javascript:void(0)" id="exportExcelBtn"><i class="bi bi-file-earmark-excel"></i> Xuất Excel (.xlsx)</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" id="exportPdfBtn"><i class="bi bi-file-earmark-pdf"></i> Xuất PDF (.pdf)</a></li>
+                                </ul>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Trạng thái</label>
-                                <select class="form-select" id="statusFilter">
-                                    <option value="">Tất cả</option>
-                                    <option value="PENDING">Chờ xác nhận</option>
-                                    <option value="PROCESSING">Đang xử lý</option>
-                                    <option value="SHIPPING">Đang giao hàng</option>
-                                    <option value="DELIVERED">Đã giao hàng</option>
-                                    <option value="COMPLETED">Hoàn thành</option>
-                                    <option value="CANCELLED">Đã hủy</option>
-                                    <option value="REFUNDED">Đã hoàn tiền</option>
-                                </select>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-card__body mt-3">
+                        <div class="row g-4">
+                            <div class="col-lg-4 col-md-6">
+                                <div class="form__group">
+                                    <label class="form-label" for="searchInput">Tìm kiếm nhanh</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                        <input type="text" class="form-control border-start-0 ps-0" id="searchInput" placeholder="Mã đơn hàng, tên khách hàng...">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Từ ngày</label>
-                                <input type="date" class="form-control" id="fromDate">
+                            <div class="col-lg-3 col-md-6">
+                                <div class="form__group">
+                                    <label class="form-label" for="statusFilter">Trạng thái đơn hàng</label>
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">Tất cả trạng thái</option>
+                                        <option value="PENDING">🕒 Chờ xác nhận</option>
+                                        <option value="PROCESSING">⚙️ Đang xử lý</option>
+                                        <option value="SHIPPING">🚚 Đang giao hàng</option>
+                                        <option value="DELIVERED">✅ Đã giao hàng</option>
+                                        <option value="COMPLETED">🏁 Hoàn thành</option>
+                                        <option value="CANCELLED">❌ Đã hủy</option>
+                                        <option value="REFUNDED">💰 Đã hoàn tiền</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Đến ngày</label>
-                                <input type="date" class="form-control" id="toDate">
+                            <div class="col-lg-5 col-md-12">
+                                <div class="form__group">
+                                    <label class="form-label">Phạm vi thời gian</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="date" class="form-control" id="fromDate">
+                                        <span class="text-muted">đến</span>
+                                        <input type="date" class="form-control" id="toDate">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Orders Table -->
-                <div class="card">
-                    <div class="card-body">
+                <div id="alertContainer"></div>
+
+                <!-- Orders Table Area -->
+                <div class="admin-card animate-slide-up" style="animation-delay: 0.1s;">
+                    <div class="admin-card__header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="admin-card__title">Danh sách đơn hàng</h2>
+                        </div>
+                        <div class="text-muted small" id="orderCountLabel">Đang tải...</div>
+                    </div>
+                    
+                    <div class="admin-card__body p-0 mt-3">
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
                                     <tr>
-                                        <th>ID</th>
+                                        <th class="ps-4">ID</th>
                                         <th>Mã đơn hàng</th>
                                         <th>Khách hàng</th>
                                         <th>Tổng tiền</th>
                                         <th>Trạng thái</th>
                                         <th>Ngày đặt</th>
-                                        <th>Thao tác</th>
+                                        <th class="pe-4 text-end">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody id="ordersTableBody">
                                     <tr>
-                                        <td colspan="7" class="text-center">
-                                            <div class="spinner-border" role="status">
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
                                                 <span class="visually-hidden">Loading...</span>
                                             </div>
+                                            <p class="mt-2 text-muted">Đang tải dữ liệu đơn hàng...</p>
                                         </td>
                                     </tr>
                                 </tbody>
