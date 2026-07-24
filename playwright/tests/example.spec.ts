@@ -13,7 +13,7 @@ test('Đăng nhập với tài khoản admin và đăng xuất', async ({ page }
 
   // Điền thông tin đăng nhập
   await page.getByRole('textbox', { name: 'Email' }).fill('admin123@gmail.com');
-  await page.getByRole('textbox', { name: 'Mật khẩu' }).fill('admin123@gmail.com');
+  await page.getByRole('textbox', { name: 'Mật khẩu' }).fill('Password@123');
   await page.screenshot({ path: 'debug-03-filled-form.png' });
 
   // Click submit

@@ -48,6 +48,7 @@ com\smartshop\service\ReviewService$ProductRatingStats.class
 com\smartshop\entity\payment\PaymentTransaction.class
 com\smartshop\controller\DashboardController.class
 com\smartshop\service\PaymentService.class
+com\smartshop\config\DataSeeder.class
 com\smartshop\entity\order\Order.class
 com\smartshop\dto\order\OrderDetailResponse$OrderDetailResponseBuilder.class
 com\smartshop\repository\OrderRepository.class

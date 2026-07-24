@@ -34,7 +34,7 @@ public class DataSeeder {
                 User admin = new User();
                 admin.setUsername("admin");
                 admin.setEmail("admin123@gmail.com");
-                admin.setPassword("admin123@gmail.com"); // Trùng với email để test, NoOpPasswordEncoder sẽ ko mã hoá
+                admin.setPassword("Password@123"); // Trùng với database.sql, NoOpPasswordEncoder sẽ ko mã hoá
                 admin.setFullName("admin Quản trị");
                 admin.setActive(true);
                 admin.setRoles(Collections.singletonList(adminRole));

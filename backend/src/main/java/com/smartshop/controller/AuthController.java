@@ -108,6 +108,8 @@ public class AuthController {
             return ResponseEntity.ok(authResponse);
         } catch (RuntimeException e) {
             // Trả về error message nếu tài khoản bị khóa hoặc lỗi khác
+            e.printStackTrace(); // DEBUG LOG
+            System.err.println("Login Failed RuntimeException: " + e.getMessage());
             Map<String, String> errorResponse = new java.util.HashMap<>();
             errorResponse.put("message", e.getMessage());
             return ResponseEntity.status(403).body(errorResponse);
