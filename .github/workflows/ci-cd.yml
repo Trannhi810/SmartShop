@@ -88,14 +88,7 @@ jobs:
     - name: Import database schema and seed data
       run: mysql --force -h 127.0.0.1 -u root smartshop < backend/database.sql
 
-    - name: Seed admin user for testing
-      run: |
-        mysql -h 127.0.0.1 -u root smartshop <<'EOF'
-        INSERT IGNORE INTO roles (id, name) VALUES (1, 'ROLE_ADMIN'), (2, 'ROLE_USER');
-        INSERT IGNORE INTO users (id, username, email, password, full_name, is_active) 
-          VALUES (1, 'admin', 'admin123@gmail.com', 'admin123@gmail.com', 'admin Quản trị', TRUE);
-        INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (1, 1);
-        EOF
+
 
     - name: Install dependencies for Playwright
       run: npm ci
