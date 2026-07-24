@@ -61,9 +61,15 @@ async function loadProducts() {
         console.log('API Response data:', response);
 
         if (response && response.content) {
-            // Standard Spring Data Page
             products = response.content;
-            totalPages = response.totalPages;
+            // Spring Boot 3.x trả về pagination info trong nested object "page"
+            // Cấu trúc mới: { content: [...], page: { totalPages, totalElements, size, number } }
+            // Cấu trúc cũ: { content: [...], totalPages, totalElements, ... }
+            if (response.page) {
+                totalPages = response.page.totalPages;
+            } else {
+                totalPages = response.totalPages;
+            }
         } else if (response && response.data) {
             // Some APIs wrap content in data
             products = Array.isArray(response.data) ? response.data : (response.data.content || []);
@@ -200,64 +206,63 @@ async function addToCart(productId, variantId, quantity) {
 function renderPagination(totalPages, current) {
     const paginationEl = document.getElementById('pagination');
     if (!paginationEl) return;
-    
-    // Đảm bảo luôn hiển thị phân trang (ít nhất 1 trang)
-    const displayTotalPages = Math.max(1, totalPages);
-    let html = '';
-    
-    // Prev button
-    const prevDisabled = current <= 0 ? 'disabled' : '';
-    html += `
-        <li class="pagination__item">
-            <a href="javascript:void(0)" class="pagination__link ${prevDisabled}" onclick="if(${current} > 0) changePage(${current - 1})" aria-label="Trang trước">
-                &laquo;
-            </a>
-        </li>
-    `;
-    
-    // Page numbers
-    for (let i = 0; i < displayTotalPages; i++) {
-        if (displayTotalPages > 7) {
-            // Rút gọn trang nếu quá nhiều (chỉ hiển thị quanh trang hiện tại)
-            if (i === 0 || i === displayTotalPages - 1 || (i >= current - 1 && i <= current + 1)) {
-                const active = current === i ? 'active' : '';
-                html += `
-                    <li class="pagination__item">
-                        <a href="javascript:void(0)" class="pagination__link ${active}" onclick="changePage(${i})">${i + 1}</a>
-                    </li>
-                `;
-            } else if (i === current - 2 || i === current + 2) {
-                 html += `
-                    <li class="pagination__item">
-                        <span class="pagination__link" style="border: none; background: transparent; padding: 10px 8px; cursor: default;">...</span>
-                    </li>
-                `;
-            }
-        } else {
-            const active = current === i ? 'active' : '';
-            html += `
-                <li class="pagination__item">
-                    <a href="javascript:void(0)" class="pagination__link ${active}" onclick="changePage(${i})">${i + 1}</a>
-                </li>
-            `;
-        }
+
+    // Ẩn pagination nếu chỉ có 1 trang hoặc không có sản phẩm
+    if (totalPages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
     }
-    
-    // Next button
-    const nextDisabled = current >= displayTotalPages - 1 ? 'disabled' : '';
-    html += `
-        <li class="pagination__item">
-            <a href="javascript:void(0)" class="pagination__link ${nextDisabled}" onclick="if(${current} < ${displayTotalPages - 1}) changePage(${current + 1})" aria-label="Trang tiếp">
-                &raquo;
-            </a>
-        </li>
-    `;
-    
+
+    // Tính toán các số trang cần hiển thị
+    function getPageNumbers(total, cur) {
+        if (total <= 7) {
+            // Hiển thị tất cả nếu <= 7 trang
+            return Array.from({ length: total }, (_, i) => i);
+        }
+        // Luôn hiển thị: trang đầu, trang cuối, trang hiện tại, và 1 trang kề 2 bên
+        const pages = new Set();
+        pages.add(0);                    // Trang đầu
+        pages.add(total - 1);            // Trang cuối
+        pages.add(cur);                  // Trang hiện tại
+        if (cur - 1 >= 0) pages.add(cur - 1);  // Trang trước
+        if (cur + 1 < total) pages.add(cur + 1); // Trang sau
+        return Array.from(pages).sort((a, b) => a - b);
+    }
+
+    const pageNumbers = getPageNumbers(totalPages, current);
+    let html = '';
+
+    // Nút Prev
+    if (current <= 0) {
+        html += `<li class="pagination__item"><span class="pagination__link disabled">&laquo;</span></li>`;
+    } else {
+        html += `<li class="pagination__item"><a href="javascript:void(0)" class="pagination__link" onclick="changePage(${current - 1})" aria-label="Trang trước">&laquo;</a></li>`;
+    }
+
+    // Các số trang (với dấu ... ở giữa nếu cần)
+    for (let idx = 0; idx < pageNumbers.length; idx++) {
+        const i = pageNumbers[idx];
+        // Chèn dấu "..." nếu có khoảng trống
+        if (idx > 0 && i - pageNumbers[idx - 1] > 1) {
+            html += `<li class="pagination__item"><span class="pagination__link" style="border:none;background:transparent;cursor:default;">...</span></li>`;
+        }
+        const active = current === i ? 'active' : '';
+        html += `<li class="pagination__item"><a href="javascript:void(0)" class="pagination__link ${active}" onclick="changePage(${i})">${i + 1}</a></li>`;
+    }
+
+    // Nút Next
+    if (current >= totalPages - 1) {
+        html += `<li class="pagination__item"><span class="pagination__link disabled">&raquo;</span></li>`;
+    } else {
+        html += `<li class="pagination__item"><a href="javascript:void(0)" class="pagination__link" onclick="changePage(${current + 1})" aria-label="Trang tiếp">&raquo;</a></li>`;
+    }
+
     paginationEl.innerHTML = html;
 }
 
 function changePage(page) {
     const url = new URL(window.location);
-    url.searchParams.set('page', page + 1); // URL parameter starts from 1
+    // Giữ nguyên các params hiện tại (q, category...) chỉ thay page
+    url.searchParams.set('page', page + 1); // URL dùng index bắt đầu từ 1
     window.location.href = url.toString();
 }
