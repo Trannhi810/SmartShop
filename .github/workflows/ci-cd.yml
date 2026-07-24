@@ -33,7 +33,9 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: ./mvnw clean verify
+      run: |
+        chmod +x mvnw
+        ./mvnw clean verify
       env:
         DB_URL: jdbc:mysql://localhost:3306/smartshop?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
         DB_USERNAME: root
