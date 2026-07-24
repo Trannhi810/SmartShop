@@ -86,7 +86,7 @@ jobs:
         path: backend/target/
 
     - name: Import database schema and seed data
-      run: mysql -h 127.0.0.1 -u root smartshop < backend/database.sql
+      run: mysql --force -h 127.0.0.1 -u root smartshop < backend/database.sql
 
     - name: Install dependencies for Playwright
       run: npm ci
