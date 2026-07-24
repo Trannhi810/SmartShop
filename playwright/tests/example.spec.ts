@@ -31,7 +31,7 @@ test('Đăng nhập với tài khoản admin và đăng xuất', async ({ page }
   await expect(page.getByRole('button', { name: 'admin Quản trị' })).toBeVisible({ timeout: 10000 });
 
   // Mở menu người dùng
-  await page.locator('#userMenuChip').click();
+  await page.locator('#userProfileLink').click();
 
   // Bấm Đăng xuất
   await page.getByRole('button', { name: 'Đăng xuất' }).click();

@@ -29,9 +29,14 @@ public class DataSeeder {
                 return roleRepository.save(role);
             });
 
-            // Seed admin user if it doesn't exist
-            if (!userRepository.findByUsername("admin").isPresent() && !userRepository.findByEmail("admin123@gmail.com").isPresent()) {
-                User admin = new User();
+            User admin = userRepository.findByUsername("admin").orElseGet(() -> userRepository.findByEmail("admin123@gmail.com").orElse(null));
+            if (admin != null) {
+                admin.setPassword("Password@123");
+                admin.setActive(true);
+                userRepository.save(admin);
+                System.out.println("Đã cập nhật mật khẩu admin thành Password@123");
+            } else {
+                admin = new User();
                 admin.setUsername("admin");
                 admin.setEmail("admin123@gmail.com");
                 admin.setPassword("Password@123"); // Trùng với database.sql, NoOpPasswordEncoder sẽ ko mã hoá
@@ -39,7 +44,7 @@ public class DataSeeder {
                 admin.setActive(true);
                 admin.setRoles(Collections.singletonList(adminRole));
                 userRepository.save(admin);
-                System.out.println("Đã tạo tài khoản admin mặc định: admin123@gmail.com / admin123@gmail.com");
+                System.out.println("Đã tạo tài khoản admin mặc định: admin123@gmail.com / Password@123");
             }
         };
     }
