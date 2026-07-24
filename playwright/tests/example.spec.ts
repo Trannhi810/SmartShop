@@ -1,17 +1,26 @@
 import { test, expect } from '@playwright/test';
 
-test('test', async ({ page }) => {
+test('Đăng nhập với tài khoản admin và đăng xuất', async ({ page }) => {
+  // Truy cập trang chủ
   await page.goto('http://localhost:8080/');
-  await page.locator('section').filter({ hasText: 'Ưu đãi mùa lễ hội Khám phá th' }).click();
+
+  // Click vào link Đăng nhập
   await page.getByRole('link', { name: 'Đăng nhập' }).click();
-  await page.getByRole('textbox', { name: 'Email' }).click();
+
+  // Điền thông tin đăng nhập
   await page.getByRole('textbox', { name: 'Email' }).fill('admin123@gmail.com');
-  await page.getByRole('textbox', { name: 'Mật khẩu' }).click();
   await page.getByRole('textbox', { name: 'Mật khẩu' }).fill('admin123@gmail.com');
   await page.getByRole('button', { name: 'Đăng nhập' }).click();
-  await page.getByRole('button', { name: 'admin Quản trị' }).click();
+
+  // Kiểm tra đăng nhập thành công: nút "admin Quản trị" phải xuất hiện
+  await expect(page.getByRole('button', { name: 'admin Quản trị' })).toBeVisible({ timeout: 10000 });
+
+  // Mở menu người dùng
   await page.locator('#userMenuChip').click();
-  await page.locator('#userMenu').getByText('admin Quản trị').click();
-  await page.locator('#userMenu').getByText('admin Quản trị').click();
+
+  // Bấm Đăng xuất
   await page.getByRole('button', { name: 'Đăng xuất' }).click();
+
+  // Kiểm tra đã đăng xuất thành công: link Đăng nhập phải xuất hiện trở lại
+  await expect(page.getByRole('link', { name: 'Đăng nhập' })).toBeVisible();
 });
