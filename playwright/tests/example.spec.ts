@@ -10,7 +10,7 @@ test('Đăng nhập với tài khoản admin và đăng xuất', async ({ page }
   // Điền thông tin đăng nhập
   await page.getByRole('textbox', { name: 'Email' }).fill('admin123@gmail.com');
   await page.getByRole('textbox', { name: 'Mật khẩu' }).fill('admin123@gmail.com');
-  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+  await page.locator('#submitButton').click();
 
   // Kiểm tra đăng nhập thành công: nút "admin Quản trị" phải xuất hiện
   await expect(page.getByRole('button', { name: 'admin Quản trị' })).toBeVisible({ timeout: 10000 });
