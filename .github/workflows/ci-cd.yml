@@ -135,6 +135,14 @@ jobs:
         path: playwright/playwright-report/
         retention-days: 30
 
+    - name: Upload Debug Screenshots
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: debug-screenshots
+        path: playwright/debug-*.png
+        retention-days: 7
+
   deploy:
     name: Deploy to Render
     needs: e2e-test
