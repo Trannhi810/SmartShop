@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký | SmartShop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-body">
+
+<main class="auth-container" id="register-page">
+    <section class="auth-panel">
+        <div class="auth-brand">SmartShop</div>
+
+        <h1 class="auth-title">Tạo tài khoản</h1>
+
+        <p class="auth-subtitle">Đã có tài khoản?
+            <a href="/auth/login.html">Đăng nhập ngay</a>
+        </p>
+
+        <div id="alertContainer"></div>
+
+        <form class="auth-form" id="registerForm">
+            <div class="form-field" id="usernameField">
+                <label for="username">Tên đăng nhập</label>
+                <input id="username" type="text" name="username" placeholder="username" required minlength="3" maxlength="50">
+                <p class="field-error" id="usernameError" style="display: none;"></p>
+            </div>
+
+            <div class="form-field" id="emailField">
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" placeholder="name@email.com" required>
+                <p class="field-error" id="emailError" style="display: none;"></p>
+            </div>
+
+            <div class="form-field" id="fullNameField">
+                <label for="fullName">Họ tên <span style="color: #999; font-weight: normal;">(tùy chọn)</span></label>
+                <input id="fullName" type="text" name="fullName" placeholder="Nguyễn Văn A">
+                <p class="field-error" id="fullNameError" style="display: none;"></p>
+            </div>
+
+            <div class="form-field" id="passwordField">
+                <label for="password">Mật khẩu</label>
+                <div class="password-input-wrapper">
+                    <input id="password" type="password" name="password" placeholder="Ít nhất 6 ký tự" required minlength="6">
+                    <button type="button" class="password-toggle" id="passwordToggle" aria-label="Hiển thị mật khẩu">
+                        <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-off-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+                <p class="field-error" id="passwordError" style="display: none;"></p>
+            </div>
+
+            <button type="submit" class="button button--primary" id="submitButton">Đăng ký</button>
+        </form>
+
+        <div class="auth-divider">
+            <span>Hoặc</span>
+        </div>
+
+        <button type="button" class="button button--google" id="googleRegisterBtn">
+            <svg viewBox="0 0 533.5 544.3" aria-hidden="true">
+                <path fill="#4285f4" d="M533.5 278.4c0-17.4-1.6-34.1-4.7-50.4H272v95.3h146.9c-6.3 34-25.1 62.9-53.7 82.3v68.2h86.9c51.1-47 81.4-116.2 81.4-195.4z"/>
+                <path fill="#34a853" d="M272 544.3c72 0 132.5-23.8 176.6-64.7l-86.9-68.2c-24.2 16.2-55.3 25.7-89.7 25.7-68.9 0-127.2-46.5-148-109.2h-89.9v68.8c43.3 86 132.8 147.6 237.9 147.6z"/>
+                <path fill="#fbbc04" d="M124 327.9c-10.4-30.3-10.4-63 0-93.3V165.8h-89.9C12.1 200.6 0 240.1 0 272s12.1 71.4 34.1 106.2z"/>
+                <path fill="#ea4335" d="M272 107.7c37.9-.6 74.1 13.6 101.7 39.6l76-76C396.9 24.9 335.2-0.6 272 0 166.9 0 77.4 61.6 34.1 165.8l89.9 68.8C144.8 154.9 203.1 108.4 272 107.7z"/>
+            </svg>
+            Đăng ký với Google
+        </button>
+
+        <p class="auth-footer">Khi đăng ký, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a> của SmartShop.</p>
+    </section>
+
+    <aside class="auth-illustration">
+        <div class="illustration-overlay">
+            <h2>Gia nhập cộng đồng SmartShop</h2>
+            <p>Nhận thông báo khuyến mãi, theo dõi đơn hàng và quản lý wishlist chỉ với vài thao tác.</p>
+        </div>
+    </aside>
+</main>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+    // Initialize Google Sign-In
+    let googleClientId = null;
+    
+    // Fetch Google Client ID from server
+    async function loadGoogleClientId() {
+        try {
+            const response = await fetch('/api/auth/google-client-id');
+            if (response.ok) {
+                const data = await response.json();
+                googleClientId = data.clientId;
+            } else {
+                console.error('Failed to load Google Client ID');
+                showAlert('Không thể tải cấu hình Google Sign-In. Vui lòng thử lại sau.', 'danger');
+            }
+        } catch (error) {
+            console.error('Error loading Google Client ID:', error);
+            showAlert('Lỗi khi tải cấu hình Google Sign-In. Vui lòng kiểm tra kết nối.', 'danger');
+        }
+    }
+    
+    async function initGoogleSignIn() {
+        // Load client ID first if not loaded
+        if (!googleClientId) {
+            await loadGoogleClientId();
+        }
+        
+        if (!googleClientId) {
+            console.error('Google Client ID is not available');
+            // Hide Google button if client ID is not available
+            const googleBtn = document.getElementById('googleRegisterBtn');
+            if (googleBtn) {
+                googleBtn.style.display = 'none';
+            }
+            return;
+        }
+        
+        if (typeof google !== 'undefined' && google.accounts) {
+            try {
+                google.accounts.id.initialize({
+                    client_id: googleClientId,
+                    callback: handleGoogleSignIn,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                });
+                
+                const googleBtn = document.getElementById('googleRegisterBtn');
+                if (googleBtn) {
+                    // Replace the button with Google's rendered button
+                    googleBtn.style.display = 'none';
+                    
+                    // Create container for Google button
+                    const googleBtnContainer = document.createElement('div');
+                    googleBtnContainer.id = 'google-button-container';
+                    googleBtnContainer.style.width = '100%';
+                    googleBtn.parentNode.insertBefore(googleBtnContainer, googleBtn.nextSibling);
+                    
+                    // Render Google Sign-In button
+                    google.accounts.id.renderButton(
+                        googleBtnContainer,
+                        {
+                            type: 'standard',
+                            theme: 'outline',
+                            size: 'large',
+                            text: 'signup_with',
+                            width: '100%'
+                        }
+                    );
+                }
+            } catch (error) {
+                console.error('Error initializing Google Sign-In:', error);
+                showAlert('Lỗi khởi tạo Google Sign-In. Vui lòng kiểm tra cấu hình Client ID.', 'danger');
+                // Fallback: show original button and use click handler
+                const googleBtn = document.getElementById('googleRegisterBtn');
+                if (googleBtn) {
+                    googleBtn.style.display = 'block';
+                    googleBtn.addEventListener('click', () => {
+                        if (googleClientId) {
+                            google.accounts.id.prompt();
+                        } else {
+                            showAlert('Google Client ID chưa được cấu hình. Vui lòng liên hệ quản trị viên.', 'danger');
+                        }
+                    });
+                }
+            }
+        } else {
+            // Retry after a short delay if Google SDK not loaded yet
+            setTimeout(initGoogleSignIn, 100);
+        }
+    }
+    
+    // Load client ID first, then initialize
+    async function init() {
+        await loadGoogleClientId();
+        initGoogleSignIn();
+    }
+    
+    // Try to initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    async function handleGoogleSignIn(response) {
+        if (!response || !response.credential) {
+            showAlert('Không nhận được thông tin từ Google. Vui lòng thử lại.', 'danger');
+            return;
+        }
+        
+        try {
+            showAlert('Đang xử lý đăng ký với Google...', 'info');
+            
+            const result = await api.loginWithGoogle(response.credential);
+            
+            if (result && result.token) {
+                // Token is set via cookie, reset auth status to force fresh check
+                if (typeof resetAuthStatus === 'function') {
+                    resetAuthStatus();
+                }
+                
+                showAlert('Đăng ký/Đăng nhập thành công! Đang chuyển hướng...', 'success');
+                
+                // Redirect after short delay to allow cookie to be set
+                setTimeout(() => {
+                    window.location.href = '/?login=success';
+                }, 1000);
+            } else {
+                throw new Error(result?.message || 'Đăng ký với Google thất bại');
+            }
+        } catch (error) {
+            console.error('Google register error:', error);
+            let errorMessage = 'Đăng ký với Google thất bại. Vui lòng thử lại.';
+            
+            if (error.message) {
+                errorMessage = error.message;
+                
+                // Provide helpful error messages
+                if (error.message.includes('invalid_client') || error.message.includes('401')) {
+                    errorMessage = 'Lỗi cấu hình Google OAuth. Client ID không hợp lệ hoặc chưa được cấu hình đúng trong Google Cloud Console.';
+                } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                    errorMessage = 'Lỗi kết nối. Vui lòng kiểm tra kết nối internet và thử lại.';
+                }
+            }
+            
+            // Check if user already exists
+            if (errorMessage.includes('đã tồn tại') || 
+                errorMessage.includes('already exists') || 
+                errorMessage.includes('Email đã được sử dụng')) {
+                showAlert('Tài khoản Google này đã được sử dụng. Vui lòng đăng nhập thay vì đăng ký.', 'danger');
+                setTimeout(() => {
+                    window.location.href = '/auth/login.html';
+                }, 2000);
+            } else {
+                showAlert(errorMessage, 'danger');
+            }
+        }
+    }
+    
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        if (!container) return;
+        
+        const alertClassMap = {
+            'success': 'alert--success',
+            'danger': 'alert--error',
+            'error': 'alert--error',
+            'warning': 'alert--warning',
+            'info': 'alert--warning'
+        };
+        
+        const alertClass = alertClassMap[type] || 'alert--error';
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert ${alertClass}`;
+        alertDiv.textContent = message;
+        
+        container.innerHTML = '';
+        container.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.style.opacity = '0';
+                alertDiv.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // Toggle password visibility
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordInput = document.getElementById('password');
+    
+    if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener('click', function() {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            
+            const eyeIcon = passwordToggle.querySelector('.eye-icon');
+            const eyeOffIcon = passwordToggle.querySelector('.eye-off-icon');
+            
+            if (isPassword) {
+                eyeIcon.style.display = 'none';
+                eyeOffIcon.style.display = 'block';
+                passwordToggle.setAttribute('aria-label', 'Ẩn mật khẩu');
+            } else {
+                eyeIcon.style.display = 'block';
+                eyeOffIcon.style.display = 'none';
+                passwordToggle.setAttribute('aria-label', 'Hiển thị mật khẩu');
+            }
+        });
+    }
+</script>
+</body>
+</html>

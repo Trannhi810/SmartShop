@@ -10,6 +10,9 @@ jobs:
   build:
     name: Build & Unit Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     
     services:
       mysql:
@@ -43,7 +46,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: smartshop-app
-        path: target/*.jar
+        path: backend/target/*.jar
         retention-days: 1
 
   e2e-test:
@@ -80,28 +83,36 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: smartshop-app
-        path: target/
+        path: backend/target/
 
     - name: Install dependencies for Playwright
       run: npm ci
+      working-directory: playwright
 
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
+      working-directory: playwright
 
     - name: Start Spring Boot Application
-      run: java -jar target/*.jar &
+      run: java -jar target/*.jar > app.log 2>&1 &
+      working-directory: backend
       env:
         DB_URL: jdbc:mysql://localhost:3306/smartshop?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
         DB_USERNAME: root
         DB_PASSWORD: ''
 
     - name: Wait for backend to be ready
-      run: npx wait-on http://localhost:8080
+      run: npx wait-on http://localhost:8080 -t 60000
+      working-directory: playwright
+
+    - name: Show backend logs if failed
+      if: failure()
+      run: cat backend/app.log
 
     - name: Run Playwright tests
       run: npx playwright test
+      working-directory: playwright
       env:
-        # Base URL cho Playwright test
         BASE_URL: http://localhost:8080
 
     - name: Upload Playwright Report
@@ -109,14 +120,13 @@ jobs:
       if: always()
       with:
         name: playwright-report
-        path: playwright-report/
+        path: playwright/playwright-report/
         retention-days: 30
 
   deploy:
     name: Deploy to Render
     needs: e2e-test
     runs-on: ubuntu-latest
-    # Chỉ deploy khi code được push lên nhánh chính (không deploy khi chạy Pull Request)
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - name: Trigger Render Deploy

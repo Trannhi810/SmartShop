@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách sản phẩm - SmartShop</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/products-list.css">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main>
+    <section class="section">
+        <div class="container products-container">
+            <div class="products-header">
+                <h1 id="productsTitle">Danh sách sản phẩm</h1>
+                <p id="productsSubtitle" style="color: var(--color-muted);">Khám phá bộ sưu tập sản phẩm đa dạng từ SmartShop</p>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" id="productsGrid">
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: var(--color-primary);">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <ul class="pagination" id="pagination">
+            </ul>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="/js/api.js?v=3"></script>
+<script src="/js/notifications.js?v=3" defer></script>
+<script src="/js/home.js?v=3" defer></script>
+<script src="/js/products.js?v=3"></script>
+<script>
+    // Handle search form from header
+    function handleSearch(event) {
+        if (event) {
+            event.preventDefault();
+        }
+        
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) {
+            console.error('Search input not found');
+            return false;
+        }
+        
+        const keyword = searchInput.value.trim();
+        console.log('Search keyword:', keyword);
+        
+        // Update URL with search parameter
+        const url = new URL(window.location);
+        if (keyword) {
+            url.searchParams.set('q', keyword);
+        } else {
+            url.searchParams.delete('q');
+        }
+        
+        // Reset to first page when searching
+        url.searchParams.delete('page');
+        
+        // Reload page with new URL to trigger product reload
+        window.location.href = url.toString();
+        return false;
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        setupProductCategoryDropdown(); // Đổi tên để tránh conflict với home.js
+        updatePageTitle();
+        
+        // Set search input value from URL parameter on page load
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchKeyword = urlParams.get('q') || '';
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.value = searchKeyword;
+            console.log('Set search input value:', searchKeyword);
+        }
+    });
+    
+    // Update page title based on selected category
+    async function updatePageTitle() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('category') || urlParams.get('categoryId');
+        
+        if (categoryId) {
+            try {
+                const category = await api.getCategory(categoryId);
+                const titleEl = document.getElementById('productsTitle');
+                const subtitleEl = document.getElementById('productsSubtitle');
+                
+                if (titleEl && category && category.name) {
+                    titleEl.textContent = category.name;
+                }
+                if (subtitleEl && category && category.name) {
+                    subtitleEl.textContent = `Danh sách sản phẩm trong danh mục ${category.name}`;
+                }
+            } catch (error) {
+                console.error('Error loading category:', error);
+                // Fallback: try to get from dropdown
+                const dropdownItems = document.querySelectorAll('.nav__dropdown-item[data-category-id="' + categoryId + '"]');
+                if (dropdownItems.length > 0) {
+                    const categoryName = dropdownItems[0].textContent.trim().split('(')[0].trim();
+                    const titleEl = document.getElementById('productsTitle');
+                    const subtitleEl = document.getElementById('productsSubtitle');
+                    if (titleEl) titleEl.textContent = categoryName;
+                    if (subtitleEl) subtitleEl.textContent = `Danh sách sản phẩm trong danh mục ${categoryName}`;
+                }
+            }
+        }
+    }
+    
+    // Setup Category Dropdown (cho trang product.html)
+    async function setupProductCategoryDropdown() {
+        // Đợi một chút để đảm bảo DOM đã sẵn sàng
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const dropdown = document.getElementById('categoryDropdown');
+        const dropdownBtn = document.getElementById('categoryDropdownBtn');
+        const dropdownMenu = document.getElementById('categoryDropdownMenu');
+        
+        if (!dropdown || !dropdownBtn || !dropdownMenu) {
+            console.error('Category dropdown elements not found');
+            return;
+        }
+        
+        console.log('Setting up category dropdown for product page');
+        
+        // Remove any existing event listeners by cloning
+        const newBtn = dropdownBtn.cloneNode(true);
+        dropdownBtn.parentNode.replaceChild(newBtn, dropdownBtn);
+        const newDropdownBtn = document.getElementById('categoryDropdownBtn');
+        
+        // Toggle dropdown
+        newDropdownBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const isExpanded = dropdown.getAttribute('aria-expanded') === 'true';
+            const newState = !isExpanded;
+            dropdown.setAttribute('aria-expanded', newState);
+            console.log('Dropdown toggled, new state:', newState);
+            
+            // Force display update using both methods
+            if (newState) {
+                dropdownMenu.style.display = 'block';
+                dropdownMenu.classList.add('show');
+            } else {
+                dropdownMenu.style.display = 'none';
+                dropdownMenu.classList.remove('show');
+            }
+        });
+        
+        // Close dropdown when clicking outside (only add once)
+        if (!window.productCategoryDropdownOutsideClickAdded) {
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('categoryDropdown');
+                const dropdownMenu = document.getElementById('categoryDropdownMenu');
+                if (dropdown && dropdownMenu && !dropdown.contains(e.target)) {
+                    dropdown.setAttribute('aria-expanded', 'false');
+                    dropdownMenu.style.display = 'none';
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+            window.productCategoryDropdownOutsideClickAdded = true;
+        }
+        
+        // Load categories
+        try {
+            dropdownMenu.innerHTML = '<div class="nav__dropdown-loading">Đang tải...</div>';
+            const categories = await api.getCategories();
+            
+            if (!categories || categories.length === 0) {
+                dropdownMenu.innerHTML = '<div class="nav__dropdown-empty">Không có danh mục nào</div>';
+                return;
+            }
+            
+            // Get current category from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentCategoryId = urlParams.get('category') || urlParams.get('categoryId');
+            
+            // Render categories
+            dropdownMenu.innerHTML = categories.map(category => {
+                const isActive = currentCategoryId && String(category.id) === String(currentCategoryId);
+                const safeName = escapeHtml(category.name);
+                return `
+                    <button class="nav__dropdown-item ${isActive ? 'nav__dropdown-item--active' : ''}" 
+                            data-category-id="${category.id}"
+                            data-category-name="${safeName}">
+                        <span>${safeName}</span>
+                    </button>
+                `;
+            }).join('');
+            
+            // Add event listeners to all category buttons
+            const categoryButtons = dropdownMenu.querySelectorAll('.nav__dropdown-item');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const categoryId = button.getAttribute('data-category-id');
+                    const categoryName = button.getAttribute('data-category-name') || button.textContent.trim();
+                    
+                    if (categoryId === 'all') {
+                        filterByCategory(null, 'Tất cả');
+                    } else {
+                        filterByCategory(parseInt(categoryId), categoryName);
+                    }
+                    
+                    // Close dropdown
+                    dropdown.setAttribute('aria-expanded', 'false');
+                });
+            });
+            
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            dropdownMenu.innerHTML = '<div class="nav__dropdown-empty">Lỗi khi tải danh mục</div>';
+        }
+    }
+    
+    // Utility function để escape HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+    
+    // Filter products by category
+    function filterByCategory(categoryId, categoryName) {
+        console.log('Filtering by category:', categoryId, categoryName);
+        const url = new URL(window.location);
+        
+        if (categoryId) {
+            url.searchParams.set('category', categoryId);
+        } else {
+            url.searchParams.delete('category');
+            url.searchParams.delete('categoryId');
+        }
+        
+        // Remove page parameter to reset to first page
+        url.searchParams.delete('page');
+        
+        // Navigate to filtered page
+        window.location.href = url.toString();
+    }
+</script>
+</body>
+</html>

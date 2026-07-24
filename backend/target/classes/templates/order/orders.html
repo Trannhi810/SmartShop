@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Quản lý và theo dõi các đơn hàng của bạn trên SmartShop">
+    <meta name="keywords" content="đơn hàng, theo dõi đơn, mua sắm, SmartShop">
+    <meta name="author" content="SmartShop">
+    <title>Đơn hàng của tôi - SmartShop</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/orders.css">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main>
+    <div class="orders-page">
+        <div class="orders-layout">
+            <!-- Sidebar -->
+            <aside class="orders-sidebar">
+                <div class="sidebar-profile">
+                    <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+                    <div>
+                        <div class="sidebar-username" id="sidebarUsername">Người dùng</div>
+                        <a href="/profile.html" class="sidebar-edit">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Sửa Hồ Sơ
+                        </a>
+                    </div>
+                </div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a href="/orders.html" class="sidebar-menu-link active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+                            </svg>
+                            Đơn Mua
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/kho-voucher.html" class="sidebar-menu-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Kho Voucher
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+            
+            <!-- Main Content -->
+            <div class="orders-main">
+                <div class="orders-tabs">
+                    <button class="orders-tab active" data-status="all">Tất cả</button>
+                    <button class="orders-tab" data-status="PENDING">Chờ xác nhận</button>
+                    <button class="orders-tab" data-status="PROCESSING">Đang xử lý</button>
+                    <button class="orders-tab" data-status="SHIPPING">Đang giao hàng</button>
+                    <button class="orders-tab" data-status="DELIVERED">Đã giao hàng</button>
+                    <button class="orders-tab" data-status="COMPLETED">Hoàn thành</button>
+                    <button class="orders-tab" data-status="CANCELLED">Đã hủy</button>
+                    <button class="orders-tab" data-status="REFUNDED">Trả hàng/Hoàn tiền</button>
+                </div>
+                
+                <div class="orders-search">
+                    <input type="text" 
+                           id="orderSearchInput" 
+                           placeholder="Bạn có thể tìm kiếm theo tên Shop, ID đơn hàng hoặc Tên Sản phẩm"
+                           autocomplete="off">
+                </div>
+                
+                <div id="ordersContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: var(--color-primary);">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js" defer></script>
+<script src="/js/home.js" defer></script>
+<script src="/js/orders.js"></script>
+<script>
+    function handleSearch(event) {
+        event.preventDefault();
+        const searchInput = document.getElementById('searchInput');
+        const keyword = searchInput ? searchInput.value.trim() : '';
+        
+        if (keyword) {
+            window.location.href = `/product.html?q=${encodeURIComponent(keyword)}`;
+        } else {
+            window.location.href = '/product.html';
+        }
+    }
+    
+</script>
+</body>
+</html>

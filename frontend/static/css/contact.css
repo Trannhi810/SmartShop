@@ -1,0 +1,182 @@
+.hero-contact {
+    padding: 120px 0 64px;
+}
+
+.hero-contact .hero__title {
+    max-width: 100%;
+    margin-bottom: 16px;
+}
+
+.hero-contact .hero__subtitle {
+    max-width: 100%;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+}
+
+.contact-info-title {
+    margin: 0 0 24px;
+    font-size: 1.8rem;
+}
+
+.contact-info-list {
+    display: grid;
+    gap: 24px;
+}
+
+.contact-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.contact-info-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(37, 99, 235, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.contact-info-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-primary);
+}
+
+.contact-info-content h3 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.contact-info-content p {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+.contact-info-content a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.contact-sidebar {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4c6ef5, #7c3aed, #ec4899);
+    opacity: 0.8;
+}
+
+.contact-sidebar h2 {
+    margin: 0 0 2rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.contact-map-section {
+    margin-bottom: 2rem;
+}
+
+.contact-map-section h3 {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.contact-map-wrapper {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: 300px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted);
+}
+
+.contact-map-placeholder {
+    text-align: center;
+    padding: 2rem;
+}
+
+.contact-map-placeholder svg {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    color: var(--color-primary);
+}
+
+.contact-social-section h3 {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.contact-social-list {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.social-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.social-btn--facebook {
+    background: linear-gradient(135deg, #1877f2, #0d6efd);
+    box-shadow: 0 4px 12px rgba(24, 119, 242, 0.3);
+}
+
+.social-btn--zalo {
+    background: linear-gradient(135deg, #0068ff, #0051d5);
+    box-shadow: 0 4px 12px rgba(0, 104, 255, 0.3);
+}
+
+.social-btn--email {
+    background: linear-gradient(135deg, #ea4335, #c5221f);
+    box-shadow: 0 4px 12px rgba(234, 67, 53, 0.3);
+}
+
+@media (max-width: 768px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+}

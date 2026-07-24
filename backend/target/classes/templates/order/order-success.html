@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Xác nhận thanh toán thành công và thông tin đơn hàng SmartShop">
+    <meta name="keywords" content="thanh toán thành công, đơn hàng, SmartShop">
+    <meta name="author" content="SmartShop">
+    <title>Thanh toán thành công - SmartShop</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/order-success.css">
+</head>
+<body>
+<header class="header">
+    <div class="container header__content">
+        <div class="logo"><a href="/">SmartShop</a></div>
+        <nav class="nav">
+            <a href="/" class="nav__link">Trang chủ</a>
+            <a href="/product.html" class="nav__link">Sản phẩm</a>
+        </nav>
+        <div class="header__actions header__actions--quick">
+            <a href="#" id="wishlistLink" class="header__icon" aria-label="Danh sách yêu thích">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M17.657 5.343a4 4 0 0 0-5.657 0L11 6.343l-.999-1a4 4 0 1 0-5.657 5.657L11 17.657l6.657-6.657a4 4 0 0 0 0-5.657z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <span class="visually-hidden">Yêu thích</span>
+            </a>
+            <div class="header__notification-wrapper" id="headerNotificationWrapper">
+                <a href="#" id="notificationIcon" class="header__icon" aria-label="Thông báo">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    <span class="header__notification-badge d-none" id="notificationBadge">0</span>
+                    <span class="visually-hidden">Thông báo</span>
+                </a>
+                <div class="header__notification-menu d-none" id="notificationMenu">
+                    <div class="notification-menu__header">
+                        <h3>Thông báo</h3>
+                        <button type="button" class="notification-menu__mark-all" id="markAllReadBtn">Đánh dấu tất cả đã đọc</button>
+                    </div>
+                    <div class="notification-list"></div>
+                </div>
+            </div>
+            <a href="/cart.html" class="header__icon" aria-label="Giỏ hàng">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3.5 5h2.2l1.4 9.2a1 1 0 0 0 .99.85h9.26a1 1 0 0 0 .98-.8l1.12-5.6H7.16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <circle cx="10" cy="19" r="1.4" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+                    <circle cx="16.5" cy="19" r="1.4" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+                </svg>
+                <span class="visually-hidden">Giỏ hàng</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <div class="success-container">
+        <div class="success-card">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            
+            <h1 class="success-title">Thanh toán thành công!</h1>
+            <p class="success-message">
+                Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đã được xử lý thành công và đang được chuẩn bị.
+            </p>
+            
+            <div class="order-info" id="orderInfo" style="display: none;">
+                <div class="order-info-item">
+                    <span class="order-info-label">Mã đơn hàng:</span>
+                    <span class="order-info-value" id="orderNumber">-</span>
+                </div>
+                <div class="order-info-item">
+                    <span class="order-info-label">Tổng tiền:</span>
+                    <span class="order-info-value" id="orderTotal">-</span>
+                </div>
+                <div class="order-info-item">
+                    <span class="order-info-label">Phương thức thanh toán:</span>
+                    <span class="order-info-value">VNPay</span>
+                </div>
+            </div>
+            
+            <div class="success-actions">
+                <a href="#" id="viewOrderBtn" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Xem chi tiết đơn hàng
+                </a>
+                <a href="/product.html" class="btn btn-secondary">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    Tiếp tục mua sắm
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer__content">
+            <div class="footer__section">
+                <h3 class="footer__title">Về SmartShop</h3>
+                <p class="footer__text">SmartShop - Cửa hàng thông minh cho mọi nhu cầu mua sắm của bạn.</p>
+            </div>
+            <div class="footer__section">
+                <h3 class="footer__title">Liên hệ</h3>
+                <ul class="footer__list">
+                    <li>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                            <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <a href="mailto:support@smartshop.vn">support@smartshop.vn</a>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                        </svg>
+                        <span>Hotline: 1900 1234</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="footer__divider"></div>
+    <p class="footer__copyright">© 2025 SmartShop. All rights reserved.</p>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js" defer></script>
+<script>
+    // Lấy orderId từ URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+    
+    if (orderId) {
+        // Cập nhật link xem chi tiết đơn hàng
+        const viewOrderBtn = document.getElementById('viewOrderBtn');
+        if (viewOrderBtn) {
+            viewOrderBtn.href = `/order-detail.html?id=${orderId}`;
+        }
+        
+        // Tải thông tin đơn hàng nếu có API
+        if (typeof api !== 'undefined' && api.get) {
+            api.get(`/api/orders/${orderId}`)
+                .then(response => {
+                    if (response && response.data) {
+                        const order = response.data;
+                        const orderInfo = document.getElementById('orderInfo');
+                        const orderNumber = document.getElementById('orderNumber');
+                        const orderTotal = document.getElementById('orderTotal');
+                        
+                        if (orderInfo) orderInfo.style.display = 'block';
+                        if (orderNumber && order.orderNumber) {
+                            orderNumber.textContent = order.orderNumber;
+                        }
+                        if (orderTotal && order.totalAmount) {
+                            orderTotal.textContent = new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                            }).format(order.totalAmount);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading order details:', error);
+                });
+        }
+    } else {
+        // Nếu không có orderId, ẩn nút xem chi tiết
+        const viewOrderBtn = document.getElementById('viewOrderBtn');
+        if (viewOrderBtn) {
+            viewOrderBtn.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
+

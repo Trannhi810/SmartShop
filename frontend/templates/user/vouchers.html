@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kho voucher cá nhân, lưu và sử dụng mã giảm giá trên SmartShop">
+    <meta name="keywords" content="voucher, mã giảm giá, khuyến mãi, SmartShop">
+    <meta name="author" content="SmartShop">
+    <title>Kho Voucher - SmartShop</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/vouchers.css">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main>
+    <div class="vouchers-page">
+        <div class="vouchers-layout">
+            <!-- Sidebar -->
+            <aside class="orders-sidebar">
+                <div class="sidebar-profile">
+                    <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+                    <div>
+                        <div class="sidebar-username" id="sidebarUsername">Người dùng</div>
+                        <a href="/profile.html" class="sidebar-edit">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Sửa Hồ Sơ
+                        </a>
+                    </div>
+                </div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a href="/orders.html" class="sidebar-menu-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+                            </svg>
+                            Đơn Mua
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/kho-voucher.html" class="sidebar-menu-link active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Kho Voucher
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+            
+            <!-- Main Content -->
+            <div class="orders-main">
+                <div class="vouchers-header">
+                    <h2>Kho Voucher</h2>
+                    <p>Quản lý và sử dụng các mã giảm giá bạn đã nhận</p>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="orders-tabs">
+                    <button class="orders-tab active" data-tab="all" onclick="switchTab('all')">Tất cả</button>
+                    <button class="orders-tab" data-tab="saved" onclick="switchTab('saved')">Đã lưu</button>
+                    <button class="orders-tab" data-tab="used" onclick="switchTab('used')">Đã sử dụng</button>
+                </div>
+                
+                <!-- Claim Voucher Form -->
+                <div class="voucher-claim-section">
+                    <label class="form-label" for="voucherCode">Nhập mã giảm giá</label>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <input type="text" id="voucherCode" class="form-input" placeholder="Nhập mã voucher" style="flex: 1;">
+                        <button type="button" class="button" onclick="claimVoucher()" id="claimVoucherBtn">Áp dụng</button>
+                    </div>
+                </div>
+                
+                <!-- Voucher List -->
+                <div id="voucherList">
+                    <!-- Vouchers will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js" defer></script>
+<script src="/js/home.js" defer></script>
+<script>
+    let currentTab = 'all';
+    let availableVouchers = []; // Tất cả voucher từ database còn hạn
+    let myVouchers = []; // Voucher user đã claim
+    
+    // Load user data
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const user = await api.getCurrentUser();
+            if (!user) {
+                window.location.href = '/auth/login.html';
+                return;
+            }
+            
+            // Update sidebar
+            const sidebarUsername = document.getElementById('sidebarUsername');
+            const sidebarAvatar = document.getElementById('sidebarAvatar');
+            
+            sidebarUsername.textContent = user.fullName || user.username || 'User';
+            
+            if (user.avatar) {
+                sidebarAvatar.innerHTML = `<img src="${user.avatar}" alt="Avatar">`;
+            } else {
+                const initial = (user.fullName || user.username || 'U').charAt(0).toUpperCase();
+                sidebarAvatar.textContent = initial;
+            }
+            
+            // Load vouchers
+            await loadVouchers();
+        } catch (error) {
+            console.error('Error loading user:', error);
+            window.location.href = '/auth/login.html';
+        }
+        
+        
+        // Add Enter key support for voucher code input
+        const voucherCodeInput = document.getElementById('voucherCode');
+        if (voucherCodeInput) {
+            voucherCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    claimVoucher();
+                }
+            });
+        }
+    });
+    
+    function switchTab(tab) {
+        currentTab = tab;
+        
+        // Update active tab
+        document.querySelectorAll('.orders-tab').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`.orders-tab[data-tab="${tab}"]`).classList.add('active');
+        
+        // Display vouchers based on tab
+        displayVouchers();
+    }
+    
+    async function loadVouchers() {
+        try {
+            // Load available vouchers (tất cả voucher còn hạn từ database)
+            availableVouchers = await api.getAvailableVouchers() || [];
+            
+            // Load user's vouchers (voucher user đã claim)
+            myVouchers = await api.getMyVouchers() || [];
+            
+            displayVouchers();
+        } catch (error) {
+            console.error('Error loading vouchers:', error);
+            availableVouchers = [];
+            myVouchers = [];
+            displayVouchers();
+        }
+    }
+    
+    function displayVouchers() {
+        const container = document.getElementById('voucherList');
+        let vouchersToDisplay = [];
+        
+        // Filter vouchers based on current tab
+        if (currentTab === 'all') {
+            // Tab "Tất cả": Hiển thị tất cả voucher từ database còn hạn
+            vouchersToDisplay = availableVouchers;
+        } else if (currentTab === 'saved') {
+            // Tab "Đã lưu": Hiển thị voucher user đã claim nhưng chưa dùng
+            vouchersToDisplay = myVouchers.filter(v => !v.isUsed);
+        } else if (currentTab === 'used') {
+            // Tab "Đã sử dụng": Hiển thị voucher user đã dùng
+            vouchersToDisplay = myVouchers.filter(v => v.isUsed);
+        }
+        
+        if (!vouchersToDisplay || vouchersToDisplay.length === 0) {
+            const emptyMessage = currentTab === 'all' 
+                ? 'Hiện tại không có mã giảm giá nào'
+                : currentTab === 'saved'
+                ? 'Bạn chưa có mã giảm giá đã lưu nào'
+                : 'Bạn chưa sử dụng mã giảm giá nào';
+            
+            container.innerHTML = `
+                <div class="empty-voucher">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <p>${emptyMessage}</p>
+                    ${currentTab === 'all' ? '<p style="font-size: 0.9rem; margin-top: 0.5rem;">Nhập mã voucher ở trên để thêm vào tài khoản</p>' : ''}
+                    ${currentTab === 'saved' ? '<p style="font-size: 0.9rem; margin-top: 0.5rem;">Nhập mã voucher ở trên để thêm vào tài khoản</p>' : ''}
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = vouchersToDisplay.map(voucher => {
+            const now = new Date();
+            const endDate = voucher.endDate ? new Date(voucher.endDate) : null;
+            const isExpired = endDate && now > endDate;
+            
+            // Với tab "all", voucher không có isUsed property
+            const isUsed = voucher.isUsed !== undefined ? voucher.isUsed : false;
+            const status = isUsed ? 'used' : (isExpired ? 'expired' : 'available');
+            const statusText = isUsed ? 'Đã sử dụng' : (isExpired ? 'Hết hạn' : 'Có thể sử dụng');
+            
+            // Kiểm tra user đã có voucher này chưa (chỉ cho tab "all")
+            const userHasVoucher = currentTab === 'all' && myVouchers.some(uv => 
+                (uv.voucherId && uv.voucherId === voucher.id) || uv.code === voucher.code
+            );
+            
+            const valueText = voucher.type === 'PERCENTAGE' 
+                ? `${voucher.value}%` 
+                : `${formatPrice(voucher.value)}`;
+            
+            const minOrderText = voucher.minOrder 
+                ? `Đơn tối thiểu: ${formatPrice(voucher.minOrder)}` 
+                : 'Không có điều kiện';
+            
+            const categoryText = voucher.categoryName 
+                ? `Áp dụng cho: ${voucher.categoryName}` 
+                : 'Áp dụng cho tất cả sản phẩm';
+            
+            return `
+                <div class="voucher-card ${status}">
+                    <div class="voucher-header">
+                        <div class="voucher-code">${voucher.code}</div>
+                        <span class="voucher-status ${status}">${statusText}</span>
+                    </div>
+                    <div class="voucher-details">
+                        <div class="voucher-value">Giảm ${valueText}</div>
+                        <div class="voucher-detail-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                <path d="M2 17l10 5 10-5"></path>
+                                <path d="M2 12l10 5 10-5"></path>
+                            </svg>
+                            <span>${categoryText}</span>
+                        </div>
+                        <div class="voucher-detail-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>${minOrderText}</span>
+                        </div>
+                        ${voucher.endDate ? `
+                        <div class="voucher-detail-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <span>Hết hạn: ${formatDate(voucher.endDate)}</span>
+                        </div>
+                        ` : ''}
+                        ${currentTab === 'all' && !userHasVoucher && !isExpired ? `
+                        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(226, 232, 240, 0.6);">
+                            <button type="button" class="button" onclick="claimVoucherByCode('${voucher.code}')" style="width: 100%; padding: 0.625rem 1.25rem; font-size: 0.875rem;">
+                                Lưu Voucher
+                            </button>
+                        </div>
+                        ` : ''}
+                        ${currentTab === 'all' && userHasVoucher ? `
+                        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(226, 232, 240, 0.6);">
+                            <div style="text-align: center; color: #16a34a; font-weight: 600; font-size: 0.8rem;">
+                                ✓ Đã lưu vào tài khoản
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    async function claimVoucher() {
+        const codeInput = document.getElementById('voucherCode');
+        const code = codeInput.value.trim();
+        const btn = document.getElementById('claimVoucherBtn');
+        
+        if (!code) {
+            alert('Vui lòng nhập mã voucher');
+            return;
+        }
+        
+        await claimVoucherByCode(code);
+        if (codeInput) {
+            codeInput.value = '';
+        }
+    }
+    
+    async function claimVoucherByCode(code) {
+        if (!code) {
+            alert('Mã voucher không hợp lệ');
+            return;
+        }
+        
+        try {
+            await api.claimVoucher(code);
+            alert('Thêm mã voucher thành công!');
+            // Reload both available vouchers and user vouchers
+            await loadVouchers();
+        } catch (error) {
+            console.error('Error claiming voucher:', error);
+            alert(error.message || 'Không thể thêm voucher. Vui lòng thử lại.');
+        }
+    }
+    
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+    
+    function formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN').format(price) + ' đ';
+    }
+    
+    function handleSearch(event) {
+        event.preventDefault();
+        const searchInput = document.getElementById('searchInput');
+        const keyword = searchInput ? searchInput.value.trim() : '';
+        
+        if (keyword) {
+            window.location.href = `/product.html?q=${encodeURIComponent(keyword)}`;
+        } else {
+            window.location.href = '/product.html';
+        }
+    }
+    
+</script>
+</body>
+</html>
+

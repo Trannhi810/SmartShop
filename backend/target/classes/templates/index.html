@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartShop | Trang chủ</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/css/home.css">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main>
+    <section class="hero">
+        <div class="container">
+            <div class="hero__badge">Ưu đãi mùa lễ hội</div>
+            <h1 class="hero__title">Khám phá thế giới công nghệ và thời trang thông minh</h1>
+            <p class="hero__subtitle">Bộ sưu tập mới nhất từ SmartShop với mức giảm lên tới 40% cho khách hàng mới.</p>
+            <div class="hero__cta">
+                <a href="/product.html" class="button button--primary">Mua ngay</a>
+                <a href="#featured-categories" class="button button--ghost">Khám phá danh mục</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="carousel" aria-label="Khuyến mãi nổi bật">
+        <div class="container">
+            <div class="carousel__viewport" data-carousel>
+                <article class="carousel__slide is-active" style="--bg:url('https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1400&q=80');">
+                    <div class="carousel__content">
+                        <p class="carousel__label">Sản phẩm mới</p>
+                        <h2 class="carousel__title">Tai nghe chống ồn Pro X</h2>
+                        <p class="carousel__description">Trải nghiệm âm thanh đỉnh cao cùng công nghệ chống ồn chủ động, giảm ngay 20% trong tuần này.</p>
+                        <a class="button" href="/product.html">Xem chi tiết</a>
+                    </div>
+                </article>
+                <article class="carousel__slide" style="--bg:url('https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1400&q=80');">
+                    <div class="carousel__content">
+                        <p class="carousel__label">Thời trang thông minh</p>
+                        <h2 class="carousel__title">Bộ sưu tập Xuân 2025</h2>
+                        <p class="carousel__description">Thiết kế tối giản, chất liệu bền vững, tích hợp chip NFC để kết nối mọi lúc mọi nơi.</p>
+                        <a class="button" href="/product.html">Khám phá bộ sưu tập</a>
+                    </div>
+                </article>
+                <article class="carousel__slide" style="--bg:url('https://images.unsplash.com/photo-1512447608772-994891cd05d0?auto=format&fit=crop&w=1400&q=80');">
+                    <div class="carousel__content">
+                        <p class="carousel__label">Chương trình tích điểm</p>
+                        <h2 class="carousel__title">Thành viên VIP SmartShop</h2>
+                        <p class="carousel__description">Đăng ký ngay để nhận ưu đãi độc quyền, giao hàng miễn phí và tích điểm đổi quà mỗi tuần.</p>
+                        <a class="button" href="/vouchers">Đăng ký thành viên</a>
+                    </div>
+                </article>
+            </div>
+
+            <button class="carousel__control carousel__control--prev" data-carousel-prev aria-label="Chuyển về trước">
+                &#10094;
+            </button>
+            <button class="carousel__control carousel__control--next" data-carousel-next aria-label="Chuyển sang tiếp theo">
+                &#10095;
+            </button>
+
+            <div class="carousel__dots" data-carousel-dots aria-hidden="true"></div>
+        </div>
+    </section>
+
+    <section class="section" id="featured-categories">
+        <div class="container">
+            <div class="section__header">
+                <h2 class="section__title">Danh mục nổi bật</h2>
+                <p class="section__subtitle">Lựa chọn các bộ sưu tập được yêu thích nhất tại SmartShop.</p>
+            </div>
+            <div class="grid grid--categories" id="featuredCategoriesGrid">
+                <div class="text-center" style="grid-column: 1 / -1;">
+                    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: var(--color-primary);">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section--alt" id="featured-products">
+        <div class="container">
+            <div class="section__header">
+                <h2 class="section__title">Sản phẩm được yêu thích</h2>
+                <p class="section__subtitle">Những mặt hàng nổi bật được khách hàng đánh giá cao trong tuần.</p>
+            </div>
+            <div class="grid grid--products" id="featuredProductsGrid">
+                <div class="text-center" style="grid-column: 1 / -1;">
+                    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: var(--color-primary);">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js" defer></script>
+<script src="/js/home.js" defer></script>
+</body>
+</html>
