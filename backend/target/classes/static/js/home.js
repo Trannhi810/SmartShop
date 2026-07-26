@@ -176,36 +176,41 @@ async function updateAuthUI() {
                         }
                     }
                     
-                    // Check if user is admin
+                    // Check if user is admin or staff
                     const isAdmin = user.roles && (user.roles.includes('ADMIN') || user.roles.includes('ROLE_ADMIN') || user.roles.some(r => r.includes('ADMIN')));
-                    console.log('Is admin:', isAdmin);
+                    const isStaff = user.roles && (user.roles.includes('STAFF') || user.roles.includes('ROLE_STAFF') || user.roles.some(r => r.includes('STAFF')));
+                    const hasAdminAccess = isAdmin || isStaff;
+                    console.log('Is admin:', isAdmin, '| Is staff:', isStaff);
                     
                     // Get admin menu link
                     const adminMenuLink = document.getElementById('adminMenuLink');
                     
-                    if (isAdmin) {
-                        // Show admin chip
+                    if (hasAdminAccess) {
+                        // Show chip (Quản trị / Nhân viên)
+                        const chipLabel = isAdmin ? 'Quản trị' : 'Nhân viên';
                         if (adminChip) {
+                            adminChip.textContent = chipLabel;
                             adminChip.classList.remove('d-none');
                         }
                         
-                        // Show admin chip in dropdown menu
+                        // Show chip in dropdown menu
                         const userMenuChip = document.getElementById('userMenuChip');
                         if (userMenuChip) {
+                            userMenuChip.textContent = chipLabel;
                             userMenuChip.classList.remove('d-none');
                         }
                         
-                        // Show admin menu link
+                        // Show admin/staff panel link
                         if (adminMenuLink) {
                             adminMenuLink.classList.remove('d-none');
                         }
                     } else {
-                        // Hide admin chip
+                        // Hide chip
                         if (adminChip) {
                             adminChip.classList.add('d-none');
                         }
                         
-                        // Hide admin chip in dropdown menu
+                        // Hide chip in dropdown menu
                         const userMenuChip = document.getElementById('userMenuChip');
                         if (userMenuChip) {
                             userMenuChip.classList.add('d-none');

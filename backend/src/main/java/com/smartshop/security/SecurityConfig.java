@@ -86,12 +86,16 @@ public class SecurityConfig {
                 .requestMatchers("/cart.html", "/checkout.html", "/orders.html", 
                                "/order-detail.html", "/wishlist.html", "/user/**").authenticated()
                 
-                // Admin pages (require ADMIN role)
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                
-                // Admin endpoints
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
+                // Admin pages (require ADMIN or STAFF role)
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")
+
+                // Admin-only endpoints (nhạy cảm – chỉ ADMIN)
+                .requestMatchers("/api/admin/users/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/roles/**").hasRole("ADMIN")
+
+                // Shared admin endpoints (ADMIN + STAFF)
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "STAFF")
+
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )

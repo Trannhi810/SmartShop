@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
 public class AdminController {
 
     private final AdminService adminService;
@@ -31,13 +31,17 @@ public class AdminController {
         this.userExportService = userExportService;
     }
 
-    // Quản lý Users
+    // ============================
+    // Quản lý Users – CHỈ ADMIN
+    // ============================
     @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
         return ResponseEntity.ok(ApiResponse.success(adminService.getAllUsers()));
     }
 
     @PutMapping("/users/{userId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserStatus(
             @PathVariable Long userId,
             @RequestParam boolean isActive) {
@@ -45,6 +49,7 @@ public class AdminController {
     }
 
     @PutMapping("/users/{userId}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserRoles(
             @PathVariable Long userId,
             @RequestBody UpdateUserRolesRequest request) {

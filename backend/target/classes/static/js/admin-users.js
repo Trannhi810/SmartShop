@@ -320,7 +320,8 @@ async function editUserRoles(userId) {
     
     // Set checkboxes based on current roles
     document.getElementById('roleCustomer').checked = currentRoleNames.includes('ROLE_CUSTOMER');
-    document.getElementById('roleAdmin').checked = currentRoleNames.includes('ROLE_ADMIN');
+    document.getElementById('roleStaff').checked    = currentRoleNames.includes('ROLE_STAFF');
+    document.getElementById('roleAdmin').checked    = currentRoleNames.includes('ROLE_ADMIN');
     
     // Show modal
     const modal = new bootstrap.Modal(document.getElementById('roleModal'));
@@ -338,6 +339,9 @@ async function saveUserRoles() {
     const selectedRoles = [];
     if (document.getElementById('roleCustomer').checked) {
         selectedRoles.push('ROLE_CUSTOMER');
+    }
+    if (document.getElementById('roleStaff').checked) {
+        selectedRoles.push('ROLE_STAFF');
     }
     if (document.getElementById('roleAdmin').checked) {
         selectedRoles.push('ROLE_ADMIN');

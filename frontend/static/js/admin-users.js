@@ -3,6 +3,19 @@ let users = [];
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const user = await api.getCurrentUser();
+        const isStaff = user.roles && (user.roles.includes('STAFF') || user.roles.includes('ROLE_STAFF') || user.roles.some(r => r.includes('STAFF')));
+        if (isStaff) {
+            alert('Bạn không có quyền truy cập trang Quản lý Người dùng.');
+            window.location.href = '/admin/dashboard.html';
+            return;
+        }
+    } catch (e) {
+        window.location.href = '/auth/login.html';
+        return;
+    }
+
     // Load data first
     await loadUsers();
     
@@ -320,7 +333,8 @@ async function editUserRoles(userId) {
     
     // Set checkboxes based on current roles
     document.getElementById('roleCustomer').checked = currentRoleNames.includes('ROLE_CUSTOMER');
-    document.getElementById('roleAdmin').checked = currentRoleNames.includes('ROLE_ADMIN');
+    document.getElementById('roleStaff').checked    = currentRoleNames.includes('ROLE_STAFF');
+    document.getElementById('roleAdmin').checked    = currentRoleNames.includes('ROLE_ADMIN');
     
     // Show modal
     const modal = new bootstrap.Modal(document.getElementById('roleModal'));
@@ -338,6 +352,9 @@ async function saveUserRoles() {
     const selectedRoles = [];
     if (document.getElementById('roleCustomer').checked) {
         selectedRoles.push('ROLE_CUSTOMER');
+    }
+    if (document.getElementById('roleStaff').checked) {
+        selectedRoles.push('ROLE_STAFF');
     }
     if (document.getElementById('roleAdmin').checked) {
         selectedRoles.push('ROLE_ADMIN');

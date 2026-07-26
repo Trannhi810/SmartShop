@@ -215,10 +215,13 @@ CREATE TABLE notifications (
 -- ============================================================
 
 -- ROLES
+-- ROLE_ADMIN (1): Toàn quyền hệ thống
+-- ROLE_STAFF (2): Nhân viên – quản lý đơn hàng, sản phẩm, reviews (không quản lý users/roles)
+-- ROLE_CUSTOMER (3): Khách hàng thông thường
 INSERT INTO roles (id, name) VALUES
-(1,'ROLE_USER'),
-(2,'ROLE_ADMIN'),
-(3,'ROLE_CUSTOMER');
+(1, 'ROLE_ADMIN'),
+(2, 'ROLE_STAFF'),
+(3, 'ROLE_CUSTOMER');
 
 -- ============================
 -- USERS (30 người – tên thực tế, email không dấu chấm)
@@ -285,15 +288,17 @@ INSERT INTO users (id, username, password, email, full_name, phone, avatar, is_a
 (28,'lephuongmai@gmail.com','Password@123','lephuongmai@gmail.com','Lê Phương Mai','0900000027',NULL,1,'2025-10-01 18:30:00','2025-10-01 18:30:00'),
 
 (29,'buingoclam@gmail.com','Password@123','buingoclam@gmail.com','Bùi Ngọc Lâm','0900000028',NULL,1,'2025-10-15 19:40:00','2025-10-15 19:40:00'),
-
-(30,'dangkimanh@gmail.com','Password@123','dangkimanh@gmail.com','Đặng Kim Anh','0900000029',NULL,1,'2025-11-01 20:50:00','2025-11-01 20:50:00');
-
-
+(30,'dangkimanh@gmail.com','Password@123','dangkimanh@gmail.com','Đặng Kim Anh','0900000029',NULL,1,'2025-11-01 20:50:00','2025-11-01 20:50:00'),
+-- Tài khoản nhân viên mẫu
+(31,'staff','Password@123','staff@smartshop.com','Nhân Viên SmartShop','0911111111',NULL,1,'2025-01-06 08:00:00','2025-01-06 08:00:00');
 
 -- USERS_ROLES
+-- admin (id=1) → ROLE_ADMIN (1)
+-- staff (id=31) → ROLE_STAFF (2)
+-- customers (id=2..30) → ROLE_CUSTOMER (3)
 INSERT INTO users_roles (user_id, role_id) VALUES
-(1,2),
-(1,3),
+(1, 1),
+(31, 2),
 (2,3),(3,3),(4,3),(5,3),(6,3),(7,3),(8,3),(9,3),
 (10,3),(11,3),(12,3),(13,3),(14,3),(15,3),(16,3),
 (17,3),(18,3),(19,3),(20,3),(21,3),(22,3),(23,3),
