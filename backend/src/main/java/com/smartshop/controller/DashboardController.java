@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api/admin/dashboard")
 @CrossOrigin
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
 public class DashboardController {
 
     private final DashboardService dashboardService;

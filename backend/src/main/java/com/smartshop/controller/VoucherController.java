@@ -24,14 +24,14 @@ public class VoucherController {
 
     // ✅ Xem danh sách tất cả voucher (Admin)
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<VoucherResponse>> getAll() {
         return ResponseEntity.ok(voucherService.getAll());
     }
 
     // ✅ Chi tiết 1 voucher (Admin)
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<VoucherResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(voucherService.getById(id));
     }

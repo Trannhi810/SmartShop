@@ -3,6 +3,19 @@ let users = [];
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const user = await api.getCurrentUser();
+        const isStaff = user.roles && (user.roles.includes('STAFF') || user.roles.includes('ROLE_STAFF') || user.roles.some(r => r.includes('STAFF')));
+        if (isStaff) {
+            alert('Bạn không có quyền truy cập trang Quản lý Người dùng.');
+            window.location.href = '/admin/dashboard.html';
+            return;
+        }
+    } catch (e) {
+        window.location.href = '/auth/login.html';
+        return;
+    }
+
     // Load data first
     await loadUsers();
     

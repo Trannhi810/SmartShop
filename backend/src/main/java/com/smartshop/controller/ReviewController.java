@@ -99,7 +99,7 @@ public class ReviewController {
 
     // ✅ 5. Admin: Xem tất cả bình luận (có phân trang và lọc)
     @GetMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Page<ReviewResponse>> getAllReviews(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,

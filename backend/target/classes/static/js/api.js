@@ -501,3 +501,37 @@ function showLoading(element) {
     }
 }
 
+// Apply role-based UI restrictions in Admin Panel
+document.addEventListener('DOMContentLoaded', async function() {
+    if (!window.location.pathname.startsWith('/admin')) return;
+    
+    try {
+        const user = await api.getCurrentUser();
+        const isStaff = user.roles && (user.roles.includes('STAFF') || user.roles.includes('ROLE_STAFF') || user.roles.some(r => r.includes('STAFF')));
+        
+        if (isStaff) {
+            document.body.classList.add('is-staff');
+            
+            // Inject CSS rules to hide restricted elements
+            const style = document.createElement('style');
+            style.innerHTML = `
+                /* Hide 'Quản lý Người dùng' sidebar item */
+                a[href="/admin/users.html"] { display: none !important; }
+                
+                /* Hide Add buttons */
+                button[data-bs-target="#productModal"],
+                button[data-bs-target="#categoryModal"],
+                button[data-bs-target="#voucherModal"] { display: none !important; }
+                
+                /* Hide Action buttons (Sửa, Xóa, Đổi trạng thái) */
+                button[onclick^="edit"],
+                button[onclick^="toggle"],
+                button[onclick^="confirmDelete"] { display: none !important; }
+            `;
+            document.head.appendChild(style);
+        }
+    } catch (e) {
+        console.error('Failed to apply role restrictions:', e);
+    }
+});
+
