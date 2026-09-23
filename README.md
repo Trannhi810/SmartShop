@@ -638,30 +638,6 @@ Sau khi chạy `database.sql`, có sẵn các tài khoản:
 - Sử dụng JWT secret mạnh hơn
 - Cấu hình CORS cho domain thật
 
----
-
-## 🤝 Đóng Góp
-
-1. Fork project
-2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
-
----
-
-## 📄 License
-
-Dự án này được phát triển cho mục đích học tập và nghiên cứu.
-
----
-
-## 👨‍💻 Tác Giả
-
-SmartShop Development Team
-
----
-
 ## 📚 Tài Liệu Tham Khảo
 
 ### Tài liệu trong dự án:
